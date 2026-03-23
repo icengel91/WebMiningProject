@@ -2,7 +2,7 @@
 
 University project for the **Web Mining** module (M.Sc. Data Science).
 
-Analyzes how **asset prices** (stocks, crypto) react to **social media sentiment** from Reddit, X (Twitter), and news sites.
+Analyzes how **stock prices** react to **social media sentiment** from Reddit, X (Twitter), and news sites.
 
 ## Quick Start
 
