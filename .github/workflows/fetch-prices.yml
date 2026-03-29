@@ -1,0 +1,40 @@
+name: Fetch stock prices
+
+on:
+  schedule:
+    - cron: "30 9 * * 1-5"   # Mon–Fri 09:30 UTC
+    - cron: "0 13 * * 1-5"   # Mon–Fri 13:00 UTC
+    - cron: "0 17 * * 1-5"   # Mon–Fri 17:00 UTC
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run on"
+        required: false
+        default: "feature/stocks-crawling"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch stock prices
+        run: python -m src.finance.scheduler --once
+
+      - name: Commit and push price data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/prices/
+          git diff --cached --quiet || git commit -m "chore: fetch stock prices [$(date -u +%Y-%m-%dT%H:%M)]"
+          git push
