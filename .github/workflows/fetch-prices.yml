@@ -10,7 +10,7 @@ on:
       branch:
         description: "Branch to run on"
         required: false
-        default: "feature/stocks-crawling"
+        default: "main"
       tickers:
         description: "Space-separated ticker symbols (leave empty to use configs/tickers.yml)"
         required: false
@@ -18,6 +18,9 @@ on:
 
 permissions:
   contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   fetch:
@@ -30,7 +33,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install pandas yfinance pyyaml schedule
 
       - name: Fetch stock prices
         env:
