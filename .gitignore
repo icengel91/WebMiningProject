@@ -14,11 +14,14 @@ configs/.env
 
 # Data files (too large for git)
 data/raw/
+!data/raw/prices/
 data/processed/
 *.csv
+!data/raw/prices/*.csv
 *.parquet
 *.json
 !configs/*.json
+!data/raw/prices/*_meta.json
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
