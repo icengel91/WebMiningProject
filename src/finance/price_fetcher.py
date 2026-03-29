@@ -84,6 +84,7 @@ def fetch_prices(
     end: str | None = None,
     interval: str = "1d",
     incremental: bool = True,
+    _existing: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Download OHLCV data for the given tickers.
 
@@ -96,6 +97,8 @@ def fetch_prices(
         interval: Bar size — ``"1d"``, ``"1h"``, ``"5m"``, etc.
         incremental: If ``True`` (default), only fetch data newer than what
                      is already stored in ``prices.csv``.
+        _existing: Pre-loaded existing data (avoids redundant disk reads
+                   when called from :func:`fetch_and_save`).
 
     Returns:
         A tidy ``DataFrame`` with columns
@@ -105,7 +108,10 @@ def fetch_prices(
     default_start = start or DEFAULT_START
     end = end or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    existing = _load_existing() if incremental else pd.DataFrame(columns=COLUMN_ORDER)
+    if incremental:
+        existing = _existing if _existing is not None else _load_existing()
+    else:
+        existing = pd.DataFrame(columns=COLUMN_ORDER)
 
     frames: list[pd.DataFrame] = []
 
@@ -141,28 +147,27 @@ def fetch_prices(
             time.sleep(REQUEST_DELAY_SECONDS)
             continue
 
-        if data.empty:
+        if not data.empty:
+            # yfinance may return MultiIndex columns — flatten if necessary.
+            if isinstance(data.columns, pd.MultiIndex):
+                data.columns = data.columns.get_level_values(0)
+
+            data = data.reset_index()
+            data["Ticker"] = ticker
+
+            # Normalise the date column to UTC, date-only
+            if "Date" in data.columns:
+                data["Date"] = pd.to_datetime(data["Date"], utc=True).dt.strftime("%Y-%m-%d")
+            elif "Datetime" in data.columns:
+                data.rename(columns={"Datetime": "Date"}, inplace=True)
+                data["Date"] = pd.to_datetime(data["Date"], utc=True).dt.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+
+            frames.append(data)
+        else:
             logger.warning("No new data returned for %s.", ticker)
-            time.sleep(REQUEST_DELAY_SECONDS)
-            continue
 
-        # yfinance may return MultiIndex columns — flatten if necessary.
-        if isinstance(data.columns, pd.MultiIndex):
-            data.columns = data.columns.get_level_values(0)
-
-        data = data.reset_index()
-        data["Ticker"] = ticker
-
-        # Normalise the date column to UTC, date-only
-        if "Date" in data.columns:
-            data["Date"] = pd.to_datetime(data["Date"], utc=True).dt.strftime("%Y-%m-%d")
-        elif "Datetime" in data.columns:
-            data.rename(columns={"Datetime": "Date"}, inplace=True)
-            data["Date"] = pd.to_datetime(data["Date"], utc=True).dt.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-        frames.append(data)
         time.sleep(REQUEST_DELAY_SECONDS)
 
     if not frames:
@@ -177,17 +182,22 @@ def fetch_prices(
     return new_data
 
 
-def save_prices(new_df: pd.DataFrame) -> Path:
+def save_prices(new_df: pd.DataFrame, existing: pd.DataFrame | None = None) -> Path:
     """Merge *new_df* into the single ``prices.csv`` and write metadata.
 
     Deduplicates on ``(Date, Ticker)`` keeping the latest values.
+
+    Args:
+        new_df: Newly fetched price rows.
+        existing: Already-loaded CSV data. If ``None``, reads from disk.
 
     Returns:
         Path to the written CSV file.
     """
     RAW_PRICES_DIR.mkdir(parents=True, exist_ok=True)
 
-    existing = _load_existing()
+    if existing is None:
+        existing = _load_existing()
     combined = pd.concat([existing, new_df], ignore_index=True)
 
     # Deduplicate — keep last (newest fetch wins)
@@ -222,8 +232,12 @@ def fetch_and_save(
     Returns:
         Path to the CSV file, or ``None`` if nothing was fetched.
     """
-    new_df = fetch_prices(tickers=tickers, start=start, end=end, interval=interval)
+    existing = _load_existing()
+    new_df = fetch_prices(
+        tickers=tickers, start=start, end=end, interval=interval,
+        incremental=True, _existing=existing,
+    )
     if new_df.empty:
         logger.info("Nothing new — prices.csv unchanged.")
         return PRICES_CSV if PRICES_CSV.exists() else None
-    return save_prices(new_df)
+    return save_prices(new_df, existing=existing)

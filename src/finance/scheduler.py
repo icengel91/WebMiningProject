@@ -25,15 +25,11 @@ logger = logging.getLogger(__name__)
 SCHEDULE_TIMES_UTC: list[str] = ["09:30", "13:00", "17:00"]
 
 
-# Custom tickers set via CLI (None = use DEFAULT_TICKERS from price_fetcher)
-_cli_tickers: list[str] | None = None
-
-
-def _run_job() -> None:
+def _run_job(tickers: list[str] | None = None) -> None:
     """Execute a single incremental fetch-and-save run."""
     logger.info("Scheduled run started.")
     try:
-        path = fetch_and_save(tickers=_cli_tickers)
+        path = fetch_and_save(tickers=tickers)
         if path:
             logger.info("Run complete — %s", path)
         else:
@@ -42,10 +38,10 @@ def _run_job() -> None:
         logger.error("Scheduled run failed.", exc_info=True)
 
 
-def build_schedule() -> None:
+def build_schedule(tickers: list[str] | None = None) -> None:
     """Register the three daily jobs with the ``schedule`` library."""
     for time_str in SCHEDULE_TIMES_UTC:
-        schedule.every().day.at(time_str, "UTC").do(_run_job)
+        schedule.every().day.at(time_str, "UTC").do(_run_job, tickers=tickers)
         logger.info("Scheduled daily run at %s UTC.", time_str)
 
 
@@ -92,17 +88,14 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    global _cli_tickers  # noqa: PLW0603
-    _cli_tickers = args.tickers
-
-    if _cli_tickers:
-        logger.info("Custom tickers: %s", _cli_tickers)
+    if args.tickers:
+        logger.info("Custom tickers: %s", args.tickers)
 
     if args.once:
-        _run_job()
+        _run_job(tickers=args.tickers)
         sys.exit(0)
 
-    build_schedule()
+    build_schedule(tickers=args.tickers)
     run_forever()
 
 
