@@ -201,12 +201,13 @@ class TestSavePrices:
 class TestFetchAndSave:
     @patch("src.finance.price_fetcher.save_prices")
     @patch("src.finance.price_fetcher.fetch_prices")
-    def test_returns_none_when_empty(
+    def test_returns_none_when_no_data_and_no_file(
         self, mock_fetch: MagicMock, mock_save: MagicMock
     ) -> None:
         mock_fetch.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
-        result = fetch_and_save(tickers=["AAPL"])
+        with patch("src.finance.price_fetcher.PRICES_CSV", Path("/nonexistent/prices.csv")):
+            result = fetch_and_save(tickers=["AAPL"])
 
         assert result is None
         mock_save.assert_not_called()

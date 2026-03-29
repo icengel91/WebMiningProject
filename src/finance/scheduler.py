@@ -3,6 +3,7 @@
 Usage:
     python -m src.finance.scheduler            # foreground (Ctrl-C to stop)
     python -m src.finance.scheduler --once      # single run then exit
+    python -m src.finance.scheduler --once --tickers AAPL MSFT TSLA
 
 The three daily runs default to 09:30, 13:00, and 17:00 UTC.
 Adjust ``SCHEDULE_TIMES_UTC`` to change.
@@ -24,11 +25,15 @@ logger = logging.getLogger(__name__)
 SCHEDULE_TIMES_UTC: list[str] = ["09:30", "13:00", "17:00"]
 
 
+# Custom tickers set via CLI (None = use DEFAULT_TICKERS from price_fetcher)
+_cli_tickers: list[str] | None = None
+
+
 def _run_job() -> None:
     """Execute a single incremental fetch-and-save run."""
     logger.info("Scheduled run started.")
     try:
-        path = fetch_and_save()
+        path = fetch_and_save(tickers=_cli_tickers)
         if path:
             logger.info("Run complete — %s", path)
         else:
@@ -78,7 +83,20 @@ def main() -> None:
         action="store_true",
         help="Run a single fetch immediately and exit (useful for testing).",
     )
+    parser.add_argument(
+        "--tickers",
+        nargs="+",
+        default=None,
+        metavar="SYM",
+        help="Override tickers to fetch (e.g. --tickers AAPL MSFT TSLA).",
+    )
     args = parser.parse_args()
+
+    global _cli_tickers  # noqa: PLW0603
+    _cli_tickers = args.tickers
+
+    if _cli_tickers:
+        logger.info("Custom tickers: %s", _cli_tickers)
 
     if args.once:
         _run_job()

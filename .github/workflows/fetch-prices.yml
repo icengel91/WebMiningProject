@@ -11,6 +11,10 @@ on:
         description: "Branch to run on"
         required: false
         default: "feature/stocks-crawling"
+      tickers:
+        description: "Space-separated ticker symbols (leave empty to use configs/tickers.yml)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -29,7 +33,12 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Fetch stock prices
-        run: python -m src.finance.scheduler --once
+        run: |
+          if [ -n "${{ inputs.tickers }}" ]; then
+            python -m src.finance.scheduler --once --tickers ${{ inputs.tickers }}
+          else
+            python -m src.finance.scheduler --once
+          fi
 
       - name: Commit and push price data
         run: |

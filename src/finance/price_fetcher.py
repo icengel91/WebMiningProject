@@ -13,29 +13,36 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
+import yaml
 import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_PRICES_DIR = _PROJECT_ROOT / "data" / "raw" / "prices"
+TICKERS_CONFIG = _PROJECT_ROOT / "configs" / "tickers.yml"
 
 PRICES_CSV = RAW_PRICES_DIR / "prices.csv"
 PRICES_META = RAW_PRICES_DIR / "prices_meta.json"
 
-# Default tickers — extend as needed for your analysis
-DEFAULT_TICKERS: list[str] = [
-    "AAPL",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "TSLA",
-    "META",
-    "NVDA",
-]
 
-# Earliest date to fetch when no prior data exists
-DEFAULT_START: str = "2024-01-01"
+def _load_tickers_config() -> dict:
+    """Load ticker configuration from ``configs/tickers.yml``."""
+    if not TICKERS_CONFIG.exists():
+        raise FileNotFoundError(
+            f"Ticker config not found at {TICKERS_CONFIG}. "
+            "Copy configs/tickers.yml and define your tickers there."
+        )
+    with TICKERS_CONFIG.open() as f:
+        config = yaml.safe_load(f)
+    logger.info("Loaded ticker config from %s.", TICKERS_CONFIG)
+    return config or {}
+
+
+_config = _load_tickers_config()
+
+DEFAULT_TICKERS: list[str] = _config["tickers"]
+DEFAULT_START: str = _config.get("start_date", "2024-01-01")
 
 # Delay between individual ticker downloads to avoid throttling
 REQUEST_DELAY_SECONDS: float = 1.5

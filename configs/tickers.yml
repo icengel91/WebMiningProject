@@ -1,0 +1,14 @@
+# Stock tickers to fetch with the price crawler.
+# Edit this list to add or remove tickers — no code changes needed.
+
+tickers:
+  - AAPL
+  - MSFT
+  - GOOGL
+  - AMZN
+  - TSLA
+  - META
+  - NVDA
+
+# Earliest date to fetch when no prior data exists
+start_date: "2024-01-01"
