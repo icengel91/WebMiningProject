@@ -1,9 +1,15 @@
-"""Fetch OHLCV stock-price data from Yahoo Finance via yfinance."""
+"""Fetch OHLCV stock-price data from Yahoo Finance via yfinance.
+
+Data is stored in a **single** CSV file (``data/raw/prices/prices.csv``)
+that grows incrementally.  Each run only fetches data newer than what is
+already on disk and deduplicates on ``(Date, Ticker)`` so the file never
+contains duplicate rows regardless of how often the scheduler fires.
+"""
 
 import json
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_PRICES_DIR = _PROJECT_ROOT / "data" / "raw" / "prices"
+
+PRICES_CSV = RAW_PRICES_DIR / "prices.csv"
+PRICES_META = RAW_PRICES_DIR / "prices_meta.json"
 
 # Default tickers — extend as needed for your analysis
 DEFAULT_TICKERS: list[str] = [
@@ -25,8 +34,41 @@ DEFAULT_TICKERS: list[str] = [
     "NVDA",
 ]
 
+# Earliest date to fetch when no prior data exists
+DEFAULT_START: str = "2024-01-01"
+
 # Delay between individual ticker downloads to avoid throttling
 REQUEST_DELAY_SECONDS: float = 1.5
+
+COLUMN_ORDER: list[str] = [
+    "Date",       # Trading day (UTC, YYYY-MM-DD)
+    "Ticker",     # Stock symbol on Yahoo Finance (e.g. "AAPL")
+    "Open",       # Price at market open
+    "High",       # Highest price during the day
+    "Low",        # Lowest price during the day
+    "Close",      # Price at market close
+    "Adj Close",  # Close adjusted for splits & dividends — use for analysis
+    "Volume",     # Total shares traded that day
+]
+
+
+def _load_existing() -> pd.DataFrame:
+    """Load the existing combined CSV, or return an empty DataFrame."""
+    if PRICES_CSV.exists():
+        df = pd.read_csv(PRICES_CSV, dtype={"Date": str})
+        logger.info("Loaded %d existing rows from %s.", len(df), PRICES_CSV)
+        return df
+    return pd.DataFrame(columns=COLUMN_ORDER)
+
+
+def _last_date_for_ticker(existing: pd.DataFrame, ticker: str) -> str | None:
+    """Return the latest date string already stored for *ticker*."""
+    if existing.empty or "Ticker" not in existing.columns:
+        return None
+    subset = existing.loc[existing["Ticker"] == ticker, "Date"]
+    if subset.empty:
+        return None
+    return str(subset.max())
 
 
 def fetch_prices(
@@ -34,32 +76,54 @@ def fetch_prices(
     start: str | None = None,
     end: str | None = None,
     interval: str = "1d",
+    incremental: bool = True,
 ) -> pd.DataFrame:
     """Download OHLCV data for the given tickers.
 
     Args:
         tickers: List of Yahoo Finance ticker symbols.
                  Defaults to ``DEFAULT_TICKERS``.
-        start: Start date string (``YYYY-MM-DD``). Defaults to ``"2024-01-01"``.
+        start: Start date string (``YYYY-MM-DD``). Defaults to ``DEFAULT_START``.
+                Ignored per-ticker in incremental mode when prior data exists.
         end: End date string (``YYYY-MM-DD``). Defaults to today (UTC).
         interval: Bar size — ``"1d"``, ``"1h"``, ``"5m"``, etc.
+        incremental: If ``True`` (default), only fetch data newer than what
+                     is already stored in ``prices.csv``.
 
     Returns:
         A tidy ``DataFrame`` with columns
         ``[Date, Ticker, Open, High, Low, Close, Adj Close, Volume]``.
     """
     tickers = tickers or DEFAULT_TICKERS
-    start = start or "2024-01-01"
+    default_start = start or DEFAULT_START
     end = end or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    existing = _load_existing() if incremental else pd.DataFrame(columns=COLUMN_ORDER)
 
     frames: list[pd.DataFrame] = []
 
     for ticker in tickers:
-        logger.info("Fetching %s  [%s → %s, interval=%s]", ticker, start, end, interval)
+        # Determine per-ticker start date
+        if incremental:
+            last = _last_date_for_ticker(existing, ticker)
+            if last:
+                # Start one day after the last stored date to avoid overlap
+                ticker_start = (
+                    datetime.strptime(last, "%Y-%m-%d") + timedelta(days=1)
+                ).strftime("%Y-%m-%d")
+                if ticker_start > end:
+                    logger.info("%s is up-to-date (last=%s).", ticker, last)
+                    continue
+            else:
+                ticker_start = default_start
+        else:
+            ticker_start = default_start
+
+        logger.info("Fetching %s  [%s → %s, interval=%s]", ticker, ticker_start, end, interval)
         try:
             data: pd.DataFrame = yf.download(
                 ticker,
-                start=start,
+                start=ticker_start,
                 end=end,
                 interval=interval,
                 progress=False,
@@ -71,12 +135,11 @@ def fetch_prices(
             continue
 
         if data.empty:
-            logger.warning("No data returned for %s.", ticker)
+            logger.warning("No new data returned for %s.", ticker)
             time.sleep(REQUEST_DELAY_SECONDS)
             continue
 
-        # yfinance may return MultiIndex columns when downloading a single
-        # ticker with auto_adjust=False.  Flatten if necessary.
+        # yfinance may return MultiIndex columns — flatten if necessary.
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
 
@@ -96,53 +159,49 @@ def fetch_prices(
         time.sleep(REQUEST_DELAY_SECONDS)
 
     if not frames:
-        logger.error("No price data fetched for any ticker.")
-        return pd.DataFrame()
+        logger.info("No new price data to add.")
+        return pd.DataFrame(columns=COLUMN_ORDER)
 
-    combined = pd.concat(frames, ignore_index=True)
+    new_data = pd.concat(frames, ignore_index=True)
+    present_cols = [c for c in COLUMN_ORDER if c in new_data.columns]
+    new_data = new_data[present_cols]
 
-    # Consistent column order
-    desired_cols = ["Date", "Ticker", "Open", "High", "Low", "Close", "Adj Close", "Volume"]
-    present_cols = [c for c in desired_cols if c in combined.columns]
-    combined = combined[present_cols]
-
-    logger.info("Fetched %d rows for %d tickers.", len(combined), len(frames))
-    return combined
+    logger.info("Fetched %d new rows for %d tickers.", len(new_data), len(frames))
+    return new_data
 
 
-def save_prices(df: pd.DataFrame, tag: str = "") -> Path:
-    """Persist a price ``DataFrame`` to CSV under ``data/raw/prices/``.
+def save_prices(new_df: pd.DataFrame) -> Path:
+    """Merge *new_df* into the single ``prices.csv`` and write metadata.
 
-    Args:
-        df: The DataFrame returned by :func:`fetch_prices`.
-        tag: Optional label appended to the filename (e.g. ``"morning"``).
+    Deduplicates on ``(Date, Ticker)`` keeping the latest values.
 
     Returns:
-        The path to the written CSV file.
+        Path to the written CSV file.
     """
     RAW_PRICES_DIR.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    stem = f"prices_{tag}_{timestamp}" if tag else f"prices_{timestamp}"
+    existing = _load_existing()
+    combined = pd.concat([existing, new_df], ignore_index=True)
 
-    csv_path = RAW_PRICES_DIR / f"{stem}.csv"
-    meta_path = RAW_PRICES_DIR / f"{stem}_meta.json"
+    # Deduplicate — keep last (newest fetch wins)
+    combined.drop_duplicates(subset=["Date", "Ticker"], keep="last", inplace=True)
+    combined.sort_values(["Ticker", "Date"], inplace=True)
+    combined.reset_index(drop=True, inplace=True)
 
-    df.to_csv(csv_path, index=False)
+    combined.to_csv(PRICES_CSV, index=False)
 
     metadata = {
-        "fetched_at": timestamp,
-        "tag": tag,
-        "tickers": sorted(df["Ticker"].unique().tolist()) if "Ticker" in df.columns else [],
-        "rows": len(df),
-        "date_min": str(df["Date"].min()) if "Date" in df.columns else None,
-        "date_max": str(df["Date"].max()) if "Date" in df.columns else None,
+        "updated_at": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+        "tickers": sorted(combined["Ticker"].unique().tolist()),
+        "total_rows": len(combined),
+        "date_min": str(combined["Date"].min()),
+        "date_max": str(combined["Date"].max()),
         "yfinance_version": yf.__version__,
     }
-    meta_path.write_text(json.dumps(metadata, indent=2))
+    PRICES_META.write_text(json.dumps(metadata, indent=2))
 
-    logger.info("Saved %d rows → %s", len(df), csv_path)
-    return csv_path
+    logger.info("Saved %d total rows → %s", len(combined), PRICES_CSV)
+    return PRICES_CSV
 
 
 def fetch_and_save(
@@ -150,14 +209,14 @@ def fetch_and_save(
     start: str | None = None,
     end: str | None = None,
     interval: str = "1d",
-    tag: str = "",
 ) -> Path | None:
-    """Convenience wrapper: fetch prices then persist to disk.
+    """Convenience wrapper: incrementally fetch prices then persist to disk.
 
     Returns:
         Path to the CSV file, or ``None`` if nothing was fetched.
     """
-    df = fetch_prices(tickers=tickers, start=start, end=end, interval=interval)
-    if df.empty:
-        return None
-    return save_prices(df, tag=tag)
+    new_df = fetch_prices(tickers=tickers, start=start, end=end, interval=interval)
+    if new_df.empty:
+        logger.info("Nothing new — prices.csv unchanged.")
+        return PRICES_CSV if PRICES_CSV.exists() else None
+    return save_prices(new_df)

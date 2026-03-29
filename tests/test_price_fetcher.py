@@ -7,7 +7,9 @@ import pandas as pd
 import pytest
 
 from src.finance.price_fetcher import (
-    RAW_PRICES_DIR,
+    COLUMN_ORDER,
+    PRICES_CSV,
+    PRICES_META,
     fetch_and_save,
     fetch_prices,
     save_prices,
@@ -39,15 +41,18 @@ def sample_yf_dataframe_with_name(sample_yf_dataframe: pd.DataFrame) -> pd.DataF
 
 
 class TestFetchPrices:
+    @patch("src.finance.price_fetcher._load_existing")
     @patch("src.finance.price_fetcher.time.sleep")
     @patch("src.finance.price_fetcher.yf.download")
     def test_returns_tidy_dataframe(
         self,
         mock_download: MagicMock,
         _mock_sleep: MagicMock,
+        mock_load: MagicMock,
         sample_yf_dataframe_with_name: pd.DataFrame,
     ) -> None:
         mock_download.return_value = sample_yf_dataframe_with_name
+        mock_load.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
         df = fetch_prices(tickers=["AAPL"], start="2024-06-01", end="2024-06-08")
 
@@ -57,37 +62,44 @@ class TestFetchPrices:
         assert (df["Ticker"] == "AAPL").all()
         assert set(df.columns) >= {"Open", "High", "Low", "Close", "Volume"}
 
+    @patch("src.finance.price_fetcher._load_existing")
     @patch("src.finance.price_fetcher.time.sleep")
     @patch("src.finance.price_fetcher.yf.download")
     def test_handles_empty_response(
-        self, mock_download: MagicMock, _mock_sleep: MagicMock
+        self, mock_download: MagicMock, _mock_sleep: MagicMock, mock_load: MagicMock,
     ) -> None:
         mock_download.return_value = pd.DataFrame()
+        mock_load.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
         df = fetch_prices(tickers=["INVALID"], start="2024-06-01", end="2024-06-08")
 
         assert df.empty
 
+    @patch("src.finance.price_fetcher._load_existing")
     @patch("src.finance.price_fetcher.time.sleep")
     @patch("src.finance.price_fetcher.yf.download")
     def test_handles_download_exception(
-        self, mock_download: MagicMock, _mock_sleep: MagicMock
+        self, mock_download: MagicMock, _mock_sleep: MagicMock, mock_load: MagicMock,
     ) -> None:
         mock_download.side_effect = Exception("network error")
+        mock_load.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
         df = fetch_prices(tickers=["AAPL"], start="2024-06-01", end="2024-06-08")
 
         assert df.empty
 
+    @patch("src.finance.price_fetcher._load_existing")
     @patch("src.finance.price_fetcher.time.sleep")
     @patch("src.finance.price_fetcher.yf.download")
     def test_multiple_tickers(
         self,
         mock_download: MagicMock,
         _mock_sleep: MagicMock,
+        mock_load: MagicMock,
         sample_yf_dataframe_with_name: pd.DataFrame,
     ) -> None:
         mock_download.return_value = sample_yf_dataframe_with_name
+        mock_load.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
         df = fetch_prices(
             tickers=["AAPL", "MSFT"], start="2024-06-01", end="2024-06-08"
@@ -95,6 +107,28 @@ class TestFetchPrices:
 
         assert set(df["Ticker"].unique()) == {"AAPL", "MSFT"}
         assert len(df) == 10  # 5 rows × 2 tickers
+
+    @patch("src.finance.price_fetcher._load_existing")
+    @patch("src.finance.price_fetcher.time.sleep")
+    @patch("src.finance.price_fetcher.yf.download")
+    def test_incremental_skips_up_to_date_ticker(
+        self,
+        mock_download: MagicMock,
+        _mock_sleep: MagicMock,
+        mock_load: MagicMock,
+    ) -> None:
+        """When existing data already covers the end date, skip fetching."""
+        existing = pd.DataFrame(
+            {"Date": ["2024-06-07"], "Ticker": ["AAPL"], "Open": [150.0],
+             "High": [155.0], "Low": [149.0], "Close": [153.0],
+             "Adj Close": [153.0], "Volume": [1_000_000]}
+        )
+        mock_load.return_value = existing
+
+        df = fetch_prices(tickers=["AAPL"], end="2024-06-07")
+
+        mock_download.assert_not_called()
+        assert df.empty
 
 
 class TestSavePrices:
@@ -112,17 +146,56 @@ class TestSavePrices:
             }
         )
 
-        with patch("src.finance.price_fetcher.RAW_PRICES_DIR", tmp_path / "prices"):
-            path = save_prices(df, tag="test")
+        csv = tmp_path / "prices.csv"
+        meta = tmp_path / "prices_meta.json"
+
+        with (
+            patch("src.finance.price_fetcher.RAW_PRICES_DIR", tmp_path),
+            patch("src.finance.price_fetcher.PRICES_CSV", csv),
+            patch("src.finance.price_fetcher.PRICES_META", meta),
+        ):
+            path = save_prices(df)
 
         assert path.exists()
         assert path.suffix == ".csv"
-
-        meta_path = path.with_name(path.stem + "_meta.json")
-        assert meta_path.exists()
+        assert meta.exists()
 
         reloaded = pd.read_csv(path)
         assert len(reloaded) == 2
+
+    def test_deduplicates_on_merge(self, tmp_path: Path) -> None:
+        """Saving overlapping data should not create duplicate rows."""
+        existing = pd.DataFrame(
+            {
+                "Date": ["2024-06-03"],
+                "Ticker": ["AAPL"],
+                "Open": [150.0], "High": [155.0], "Low": [149.0],
+                "Close": [153.0], "Adj Close": [153.0], "Volume": [1_000_000],
+            }
+        )
+        csv = tmp_path / "prices.csv"
+        meta = tmp_path / "prices_meta.json"
+        existing.to_csv(csv, index=False)
+
+        new_df = pd.DataFrame(
+            {
+                "Date": ["2024-06-03", "2024-06-04"],
+                "Ticker": ["AAPL", "AAPL"],
+                "Open": [150.5, 151.0], "High": [155.0, 156.0], "Low": [149.0, 150.0],
+                "Close": [153.0, 154.0], "Adj Close": [153.0, 154.0],
+                "Volume": [1_000_000, 1_100_000],
+            }
+        )
+
+        with (
+            patch("src.finance.price_fetcher.RAW_PRICES_DIR", tmp_path),
+            patch("src.finance.price_fetcher.PRICES_CSV", csv),
+            patch("src.finance.price_fetcher.PRICES_META", meta),
+        ):
+            save_prices(new_df)
+
+        result = pd.read_csv(csv)
+        assert len(result) == 2  # not 3
 
 
 class TestFetchAndSave:
@@ -131,7 +204,7 @@ class TestFetchAndSave:
     def test_returns_none_when_empty(
         self, mock_fetch: MagicMock, mock_save: MagicMock
     ) -> None:
-        mock_fetch.return_value = pd.DataFrame()
+        mock_fetch.return_value = pd.DataFrame(columns=COLUMN_ORDER)
 
         result = fetch_and_save(tickers=["AAPL"])
 

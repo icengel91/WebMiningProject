@@ -13,7 +13,6 @@ import logging
 import signal
 import sys
 import time
-from datetime import datetime, timezone
 
 import schedule
 
@@ -24,33 +23,25 @@ logger = logging.getLogger(__name__)
 # Three daily run times (UTC, HH:MM) — roughly market open, midday, and close
 SCHEDULE_TIMES_UTC: list[str] = ["09:30", "13:00", "17:00"]
 
-# Tags so each file is distinguishable
-_TIME_TAGS = {
-    "09:30": "morning",
-    "13:00": "midday",
-    "17:00": "afternoon",
-}
 
-
-def _run_job(tag: str) -> None:
-    """Execute a single fetch-and-save run."""
-    logger.info("Scheduled run started  [tag=%s]", tag)
+def _run_job() -> None:
+    """Execute a single incremental fetch-and-save run."""
+    logger.info("Scheduled run started.")
     try:
-        path = fetch_and_save(tag=tag)
+        path = fetch_and_save()
         if path:
-            logger.info("Run complete — saved to %s", path)
+            logger.info("Run complete — %s", path)
         else:
             logger.warning("Run complete — no data fetched.")
     except Exception:
-        logger.error("Scheduled run failed [tag=%s].", tag, exc_info=True)
+        logger.error("Scheduled run failed.", exc_info=True)
 
 
 def build_schedule() -> None:
     """Register the three daily jobs with the ``schedule`` library."""
     for time_str in SCHEDULE_TIMES_UTC:
-        tag = _TIME_TAGS.get(time_str, time_str.replace(":", ""))
-        schedule.every().day.at(time_str, "UTC").do(_run_job, tag=tag)
-        logger.info("Scheduled daily run at %s UTC  [tag=%s]", time_str, tag)
+        schedule.every().day.at(time_str, "UTC").do(_run_job)
+        logger.info("Scheduled daily run at %s UTC.", time_str)
 
 
 def run_forever() -> None:
@@ -90,8 +81,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.once:
-        now = datetime.now(timezone.utc).strftime("%H%M")
-        _run_job(tag=f"manual_{now}")
+        _run_job()
         sys.exit(0)
 
     build_schedule()
