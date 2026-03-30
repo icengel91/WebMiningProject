@@ -12,6 +12,9 @@ ENV/
 .env
 configs/.env
 
+# SQLite databases (runtime artefacts, contain credentials/cookies)
+*.db
+
 # Data files (too large for git)
 data/raw/*
 !data/raw/prices/
