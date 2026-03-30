@@ -37,7 +37,9 @@ echo "[1/6] Installing system packages..."
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends \
     python3 python3-venv python3-pip \
-    chromium-browser \
+    chromium chromium-browser 2>/dev/null || \
+sudo apt-get install -y --no-install-recommends chromium
+sudo apt-get install -y --no-install-recommends \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
     libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 \
     libgbm1 libasound2 libpangocairo-1.0-0
