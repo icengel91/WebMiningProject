@@ -1,5 +1,5 @@
 {
-  "updated_at": "20260331T095142Z",
+  "updated_at": "20260401T095324Z",
   "tickers": [
     "AAPL",
     "AMZN",
@@ -9,8 +9,8 @@
     "NVDA",
     "TSLA"
   ],
-  "total_rows": 3934,
+  "total_rows": 3941,
   "date_min": "2024-01-02",
-  "date_max": "2026-03-30",
+  "date_max": "2026-03-31",
   "yfinance_version": "1.2.0"
 }
