@@ -24,18 +24,52 @@ if _ENV_PATH.exists():
 # ---------------------------------------------------------------------------
 
 QUERIES: list[str] = [
-    # --- Broad stock discussion — cashtags in the text are auto-extracted ---
-    "#stocks lang:en",
-    "#stockmarket lang:en",
-    "#trading lang:en",
-    "#investing lang:en",
-    "#wallstreetbets lang:en",
-    "#aktien lang:de",
-    "#boerse lang:de",
-    # --- High-profile cashtags as a reliable anchor ---
-    "$TSLA lang:en",
-    "$NVDA lang:en",
-    "$SAP lang:de OR lang:en",
+    # ---------------------------------------------------------------------------
+    # Energie / Oil & Gas
+    # ---------------------------------------------------------------------------
+    "#oilprice lang:en",
+    "#energystocks lang:en",
+    "#crudeoil lang:en",
+    "#Ölpreis lang:de",
+    "#Energie lang:de",
+    "$XOM lang:en",     # ExxonMobil
+    "$CVX lang:en",     # Chevron
+    "$SHEL lang:en",    # Shell
+    "$RWE lang:de OR lang:en",   # RWE (DE)
+
+    # ---------------------------------------------------------------------------
+    # Edelmetalle / Precious Metals
+    # ---------------------------------------------------------------------------
+    "#gold lang:en",
+    "#silver lang:en",
+    "#preciousmetals lang:en",
+    "#Goldpreis lang:de",
+    "$GLD lang:en",     # Gold ETF
+    "$SLV lang:en",     # Silver ETF
+    "$NEM lang:en",     # Newmont (Gold)
+    "$GOLD lang:en",    # Barrick Gold
+
+    # ---------------------------------------------------------------------------
+    # Waffenindustrie / Defense
+    # ---------------------------------------------------------------------------
+    "#defensestocks lang:en",
+    "#defense lang:en",
+    "#Rüstung lang:de",
+    "$LMT lang:en",     # Lockheed Martin
+    "$RTX lang:en",     # Raytheon
+    "$NOC lang:en",     # Northrop Grumman
+    "$RHM lang:de OR lang:en",   # Rheinmetall (DE)
+
+    # ---------------------------------------------------------------------------
+    # Elektroautos / Electric Vehicles + Ölpreis-Kontext
+    # ---------------------------------------------------------------------------
+    "#EVstocks lang:en",
+    "#electricvehicle lang:en",
+    "#Elektroauto lang:de",
+    "$TSLA lang:en",    # Tesla
+    "$NIO lang:en",     # NIO
+    "$RIVN lang:en",    # Rivian
+    "$BYDDF lang:en",   # BYD
 ]
 
 # Minimum follower count to keep a tweet (filters out low-influence noise)
