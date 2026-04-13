@@ -35,7 +35,25 @@ QUERIES: list[str] = [
     "$XOM lang:en",     # ExxonMobil
     "$CVX lang:en",     # Chevron
     "$SHEL lang:en",    # Shell
+    "$BP lang:en",      # BP
     "$RWE lang:de OR lang:en",   # RWE (DE)
+
+    # ---------------------------------------------------------------------------
+    # Ölpumpen / Oilfield Services
+    # ---------------------------------------------------------------------------
+    "#oilfieldservices lang:en",
+    "#Ölförderung lang:de",
+    "$BKR lang:en",     # Baker Hughes
+
+    # ---------------------------------------------------------------------------
+    # Erneuerbare Energien / Renewables
+    # ---------------------------------------------------------------------------
+    "#renewableenergy lang:en",
+    "#solarenergy lang:en",
+    "#ErneuerbareEnergien lang:de",
+    "#Solarenergie lang:de",
+    "$ENPH lang:en",    # Enphase Energy
+    "$SEDG lang:en",    # SolarEdge
 
     # ---------------------------------------------------------------------------
     # Edelmetalle / Precious Metals
@@ -61,15 +79,19 @@ QUERIES: list[str] = [
     "$RHM lang:de OR lang:en",   # Rheinmetall (DE)
 
     # ---------------------------------------------------------------------------
-    # Elektroautos / Electric Vehicles + Ölpreis-Kontext
+    # Automobil / Electric Vehicles + Ölpreis-Kontext
     # ---------------------------------------------------------------------------
     "#EVstocks lang:en",
     "#electricvehicle lang:en",
     "#Elektroauto lang:de",
+    "#Autoindustrie lang:de",
     "$TSLA lang:en",    # Tesla
     "$NIO lang:en",     # NIO
     "$RIVN lang:en",    # Rivian
     "$BYDDF lang:en",   # BYD
+    "$VWAGY lang:en",   # Volkswagen
+    "$BMWYY lang:en",   # BMW
+    "$TM lang:en",      # Toyota
 ]
 
 # Minimum follower count to keep a tweet (filters out low-influence noise)
