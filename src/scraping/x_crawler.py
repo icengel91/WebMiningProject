@@ -138,6 +138,16 @@ async def _scrape_search_page(
         )
     except Exception:
         logger.warning("No tweets loaded for query '%s'.", query)
+        # Dump page title + URL for debugging login-wall detection
+        try:
+            title = await page.title()
+            current_url = page.url
+            logger.warning("Page title: '%s' | URL: %s", title, current_url)
+            screenshot_path = "/tmp/x_debug.png"
+            await page.screenshot(path=screenshot_path, full_page=False)
+            logger.warning("Screenshot saved to %s", screenshot_path)
+        except Exception as dbg_err:
+            logger.warning("Debug dump failed: %s", dbg_err)
         return []
 
     collected: dict[str, ScrapedTweet] = {}
