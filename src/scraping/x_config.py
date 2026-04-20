@@ -268,6 +268,9 @@ QUERIES: list[str] = [
 MIN_FOLLOWERS: int = 100
 # Minimum likes a tweet must have to be stored (0 = no filter)
 MIN_LIKES: int = 100
+# Earliest date (inclusive) a tweet may have been posted — format YYYY-MM-DD
+# Tweets older than this date are discarded. Set to "" to disable.
+MIN_DATE: str = "2026-01-01"
 
 # Path to a custom Chromium executable — required on ARM (e.g. Raspberry Pi).
 # Leave empty to use Playwright's bundled Chromium (x86/x64 only).

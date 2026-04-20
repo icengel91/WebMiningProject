@@ -298,11 +298,31 @@ async def discover_tweets(
         # This reduces the number of scraped tweets that need follower lookup.
         effective_query = query
         if cfg.MIN_LIKES > 0:
-            effective_query = f"{query} min_faves:{cfg.MIN_LIKES}"
+            effective_query = f"{effective_query} min_faves:{cfg.MIN_LIKES}"
+        if cfg.MIN_DATE:
+            effective_query = f"{effective_query} since:{cfg.MIN_DATE}"
         scraped = await _scrape_search_page(page, effective_query, limit)
 
         for tweet in scraped:
             symbol = extract_cashtag(tweet.content)
+
+            # Filter by date — client-side safety net in case X returns older tweets.
+            if cfg.MIN_DATE and tweet.posted_at:
+                try:
+                    posted_dt = datetime.fromisoformat(
+                        tweet.posted_at.replace("Z", "+00:00")
+                    )
+                    min_dt = datetime.fromisoformat(
+                        f"{cfg.MIN_DATE}T00:00:00+00:00"
+                    )
+                    if posted_dt < min_dt:
+                        logger.debug(
+                            "Skipping tweet %s (posted %s < MIN_DATE %s).",
+                            tweet.tweet_id, tweet.posted_at, cfg.MIN_DATE,
+                        )
+                        continue
+                except ValueError:
+                    pass
 
             # Filter by like count FIRST — no extra request needed.
             # This avoids visiting profile pages for low-engagement tweets,
