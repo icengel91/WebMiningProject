@@ -2,13 +2,31 @@
 # Edit this list to add or remove tickers — no code changes needed.
 
 tickers:
-  - AAPL
-  - MSFT
-  - GOOGL
-  - AMZN
-  - TSLA
-  - META
-  - NVDA
+  # ---------------------------------------------------------------------------
+  # Mineralölkonzerne / Oil majors
+  # ---------------------------------------------------------------------------
+  - BP       # BP p.l.c.
+  - XOM      # ExxonMobil
+  - SHEL     # Shell
+  - TTE      # TotalEnergies
+  - E        # Eni (ADR)
+
+  # ---------------------------------------------------------------------------
+  # Wärmepumpe / Heat pump manufacturers
+  # ---------------------------------------------------------------------------
+  - 6367.T   # Daikin Industries (Tokyo Stock Exchange)
+  - NIBE-B.ST  # NIBE Industrier (Nasdaq Stockholm)
+  - CARR     # Carrier Global (Viessmann-Mutter / parent company)
+  - 6503.T   # Mitsubishi Electric (Tokyo Stock Exchange)
+  # Vaillant: nicht börsennotiert / not publicly listed — no ticker
+
+  # ---------------------------------------------------------------------------
+  # Automobilbranche / Automotive
+  # ---------------------------------------------------------------------------
+  - TSLA     # Tesla
+  - BYDDY    # BYD (ADR)
+  - VWAGY    # Volkswagen (ADR)
+  - HYMTF    # Hyundai Motor (OTC)
 
 # Earliest date to fetch when no prior data exists
 start_date: "2024-01-01"

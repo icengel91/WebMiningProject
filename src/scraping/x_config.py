@@ -25,47 +25,133 @@ if _ENV_PATH.exists():
 
 QUERIES: list[str] = [
     # ---------------------------------------------------------------------------
-    # Apple (AAPL)
+    # Apple (AAPL) — auskommentiert / commented out
     # ---------------------------------------------------------------------------
-    "$AAPL lang:en",
-    "#Apple lang:en",
-    "#AAPL lang:en",
-    "#AppleStock lang:en",
-    "#iPhone lang:en",
-    "#AppleEarnings lang:en",
+    # "$AAPL lang:en",
+    # "#Apple lang:en",
+    # "#AAPL lang:en",
+    # "#AppleStock lang:en",
+    # "#iPhone lang:en",
+    # "#AppleEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Microsoft (MSFT)
+    # Microsoft (MSFT) — auskommentiert / commented out
     # ---------------------------------------------------------------------------
-    "$MSFT lang:en",
-    "#Microsoft lang:en",
-    "#MSFT lang:en",
-    "#MicrosoftStock lang:en",
-    "#Azure lang:en",
-    "#MicrosoftEarnings lang:en",
+    # "$MSFT lang:en",
+    # "#Microsoft lang:en",
+    # "#MSFT lang:en",
+    # "#MicrosoftStock lang:en",
+    # "#Azure lang:en",
+    # "#MicrosoftEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Alphabet / Google (GOOGL)
+    # Alphabet / Google (GOOGL) — auskommentiert / commented out
     # ---------------------------------------------------------------------------
-    "$GOOGL lang:en",
-    "#Google lang:en",
-    "#Alphabet lang:en",
-    "#GOOGL lang:en",
-    "#GoogleStock lang:en",
-    "#GoogleEarnings lang:en",
+    # "$GOOGL lang:en",
+    # "#Google lang:en",
+    # "#Alphabet lang:en",
+    # "#GOOGL lang:en",
+    # "#GoogleStock lang:en",
+    # "#GoogleEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Amazon (AMZN)
+    # Amazon (AMZN) — auskommentiert / commented out
     # ---------------------------------------------------------------------------
-    "$AMZN lang:en",
-    "#Amazon lang:en",
-    "#AMZN lang:en",
-    "#AmazonStock lang:en",
-    "#AWS lang:en",
-    "#AmazonEarnings lang:en",
+    # "$AMZN lang:en",
+    # "#Amazon lang:en",
+    # "#AMZN lang:en",
+    # "#AmazonStock lang:en",
+    # "#AWS lang:en",
+    # "#AmazonEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Tesla (TSLA)
+    # Meta (META) — auskommentiert / commented out
+    # ---------------------------------------------------------------------------
+    # "$META lang:en",
+    # "#Meta lang:en",
+    # "#Facebook lang:en",
+    # "#META lang:en",
+    # "#MetaStock lang:en",
+    # "#MetaEarnings lang:en",
+
+    # ---------------------------------------------------------------------------
+    # NVIDIA (NVDA) — auskommentiert / commented out
+    # ---------------------------------------------------------------------------
+    # "$NVDA lang:en",
+    # "#NVIDIA lang:en",
+    # "#NVDA lang:en",
+    # "#NvidiaStock lang:en",
+    # "#AI lang:en",
+    # "#NvidiaEarnings lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Übergreifende Tech-Themen / Broad tech sentiment — auskommentiert
+    # ---------------------------------------------------------------------------
+    # "#BigTech lang:en",
+    # "#TechStocks lang:en",
+    # "#techearnings lang:en",
+    # "#MAG7 lang:en",
+    # "#stockmarket lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Mineralölkonzerne / Oil majors
+    # ---------------------------------------------------------------------------
+    "$BP lang:en",
+    "#BP lang:en",
+    "#BPstock lang:en",
+    "#BPEarnings lang:en",
+    "#BritishPetroleum lang:en",
+
+    "$XOM lang:en",
+    "#ExxonMobil lang:en",
+    "#XOM lang:en",
+    "#ExxonEarnings lang:en",
+
+    "$SHEL lang:en",
+    "#Shell lang:en",
+    "#ShellStock lang:en",
+    "#ShellEarnings lang:en",
+
+    "$TTE lang:en",
+    "#TotalEnergies lang:en",
+    "#TotalEnergiesStock lang:en",
+    "#TotalEnergiesEarnings lang:en",
+
+    "$ENI lang:en",
+    "#Eni lang:en",
+    "#EniStock lang:en",
+    "#EniEarnings lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Wärmepumpe / Heat pump manufacturers
+    # ---------------------------------------------------------------------------
+
+    # Daikin Industries (6367.T)
+    "$6367.T lang:en",
+    "#Daikin lang:en",
+    "#DaikinStock lang:en",
+    "#DaikinHeatPump lang:en",
+
+    # NIBE Industrier (NIBE-B.ST)
+    "#NIBE lang:en",
+    "#NIBEStock lang:en",
+    "#NIBEHeatPump lang:en",
+
+    # Viessmann — Tochter von Carrier Global (CARR), kein eigener Ticker
+    "#Viessmann lang:en",
+    "#ViessmannHeatPump lang:en",
+
+    # Vaillant — nicht börsennotiert, nur Hashtags
+    "#Vaillant lang:en",
+    "#VaillantHeatPump lang:en",
+
+    # Mitsubishi Electric (6503.T)
+    "$6503.T lang:en",
+    "#MitsubishiElectric lang:en",
+    "#Ecodan lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Automobilbranche — Tesla (TSLA)
     # ---------------------------------------------------------------------------
     "$TSLA lang:en",
     "#Tesla lang:en",
@@ -75,33 +161,107 @@ QUERIES: list[str] = [
     "#TeslaEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Meta (META)
+    # Automobilbranche — BYD (BYDDY)
     # ---------------------------------------------------------------------------
-    "$META lang:en",
-    "#Meta lang:en",
-    "#Facebook lang:en",
-    "#META lang:en",
-    "#MetaStock lang:en",
-    "#MetaEarnings lang:en",
+    "$BYD lang:en",
+    "#BYD lang:en",
+    "#BYDStock lang:en",
+    "#BYDEarnings lang:en",
+    "#BYDElectric lang:en",
 
     # ---------------------------------------------------------------------------
-    # NVIDIA (NVDA)
+    # Automobilbranche — Volkswagen (VWAGY)
     # ---------------------------------------------------------------------------
-    "$NVDA lang:en",
-    "#NVIDIA lang:en",
-    "#NVDA lang:en",
-    "#NvidiaStock lang:en",
-    "#AI lang:en",
-    "#NvidiaEarnings lang:en",
+    "$VOW lang:en",
+    "#Volkswagen lang:en",
+    "#VW lang:en",
+    "#VWStock lang:en",
+    "#VWEarnings lang:en",
 
     # ---------------------------------------------------------------------------
-    # Übergreifende Tech-Themen / Broad tech sentiment
+    # Automobilbranche — Hyundai (HYMTF)
     # ---------------------------------------------------------------------------
-    "#BigTech lang:en",
-    "#TechStocks lang:en",
-    "#techearnings lang:en",
-    "#MAG7 lang:en",
-    "#stockmarket lang:en",
+    "$HYUN lang:en",
+    "#Hyundai lang:en",
+    "#HyundaiStock lang:en",
+    "#HyundaiEV lang:en",
+    "#HyundaiEarnings lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Übergreifende Sektor-Queries / Broad sector sentiment
+    # ---------------------------------------------------------------------------
+    "#EnergyStocks lang:en",
+    "#Energy lang:en",
+    "#OilAndGas lang:en",
+    "#Oil lang:en",
+    "#OilMajors lang:en",
+    "#EnergyEarnings lang:en",
+    "#HeatPump lang:en",
+    "#EVs lang:en",
+    "#ElectricVehicles lang:en",
+    "#ElectricCar lang:en",
+    "#AutoIndustry lang:en",
+    "#CarStocks lang:en",
+
+    # ---------------------------------------------------------------------------
+    # Allgemeine Wirtschafts- und Finanzbegriffe / General economic & financial terms
+    # (zusätzlich / supplementary — nicht sektorspezifisch)
+    # ---------------------------------------------------------------------------
+
+    # Wirtschaft / Economy
+    "#Economy lang:en",
+
+    # Konjunktur / Business cycle
+    "#BusinessCycle lang:en",
+    "#EconomicCycle lang:en",
+
+    # Unternehmen, Firmen, Konzern / Companies & corporations
+    "#Company lang:en",
+    "#Corporation lang:en",
+
+    # Quartalszahlen / Quarterly earnings
+    "#QuarterlyEarnings lang:en",
+    "#EarningsSeason lang:en",
+
+    # Gewinn / Profit
+    "#Profit lang:en",
+    "#Earnings lang:en",
+
+    # Verlust / Loss
+    "#NetLoss lang:en",
+
+    # Prognose, Ausblick / Forecast & Outlook
+    "#Forecast lang:en",
+    "#Guidance lang:en",
+    "#Outlook lang:en",
+
+    # Wirtschaftswachstum / Economic growth
+    "#EconomicGrowth lang:en",
+    "#GDP lang:en",
+
+    # Weltwirtschaft / Global economy
+    "#GlobalEconomy lang:en",
+    "#WorldEconomy lang:en",
+
+    # Geschäftszahlen, Bilanz / Financial results & balance sheet
+    "#FinancialResults lang:en",
+    "#BalanceSheet lang:en",
+
+    # Umsatz / Revenue & Sales
+    "#Revenue lang:en",
+    "#Sales lang:en",
+
+    # Wachstum Unternehmen / Corporate growth
+    "#CorporateGrowth lang:en",
+
+    # Edelmetalle / Precious metals
+    "#PreciousMetals lang:en",
+    "#Gold lang:en",
+    "#Silver lang:en",
+
+    # Waffenindustrie / Defense industry
+    "#DefenseIndustry lang:en",
+    "#DefenseStocks lang:en",
 ]
 
 # Minimum follower count to keep a tweet (filters out low-influence noise)
