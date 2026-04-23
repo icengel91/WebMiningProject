@@ -280,8 +280,10 @@ CHROMIUM_EXECUTABLE: str = os.environ.get("CHROMIUM_EXECUTABLE", "")
 # Polling parameters
 # ---------------------------------------------------------------------------
 
-POLL_INTERVAL_MINUTES: int = 15       # Re-crawl interval per tweet
-POLL_DURATION_MINUTES: int = 120      # Total tracking window per tweet
+POLL_INTERVAL_MINUTES: int = 30       # Re-crawl interval per tweet
+POLL_DURATION_MINUTES: int = 480      # Hard maximum tracking window (8 h) — adaptive velocity filter stops most tweets earlier
+POLL_MIN_SNAPSHOTS: int = 4           # Every tweet gets at least this many polls regardless of velocity
+POLL_MIN_VELOCITY: float = 0.3        # Likes/minute threshold — tweets below this are skipped after POLL_MIN_SNAPSHOTS
 
 # ---------------------------------------------------------------------------
 # Price window around each tweet
@@ -294,8 +296,8 @@ PRICE_OFFSET_AFTER_MINUTES: int = 120
 # Rate limiting
 # ---------------------------------------------------------------------------
 
-REQUEST_DELAY_MIN: float = 1.5        # Seconds between API calls (lower bound)
-REQUEST_DELAY_MAX: float = 3.0        # Seconds between API calls (upper bound)
+REQUEST_DELAY_MIN: float = 3.0        # Seconds between API calls (lower bound)
+REQUEST_DELAY_MAX: float = 6.0        # Seconds between API calls (upper bound)
 
 # Maximum tweets to fetch per query in one discovery pass
 DISCOVERY_LIMIT: int = 500

@@ -462,9 +462,57 @@ async def poll_tracked_tweets(ctx: BrowserContext, conn: sqlite3.Connection) -> 
     Returns:
         Number of snapshots created.
     """
+    # Filter by *discovery* time (= first snapshot crawled_at), not by posted_at.
+    # Tweets may have been posted days or months ago — what matters for the polling
+    # window is when WE first crawled them, not when the author originally posted.
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=cfg.POLL_DURATION_MINUTES)
     cursor = conn.execute(
-        "SELECT tweet_id, author, posted_at FROM tweets WHERE posted_at > ?",
+        """
+        SELECT
+            t.tweet_id,
+            t.author,
+            t.posted_at,
+            COUNT(s.id)                          AS snap_count,
+            MAX(s.likes)                         AS last_likes,
+            MIN(s.likes)                         AS first_likes,
+            -- second-to-last likes via a correlated subquery
+            (
+                SELECT s2.likes
+                FROM tweet_snapshots s2
+                WHERE s2.tweet_id = t.tweet_id
+                ORDER BY s2.crawled_at DESC
+                LIMIT 1 OFFSET 1
+            )                                    AS prev_likes,
+            -- minutes between last two snapshots
+            (
+                SELECT ROUND(
+                    (JULIANDAY(s3a.crawled_at) - JULIANDAY(s3b.crawled_at)) * 1440
+                )
+                FROM tweet_snapshots s3a, tweet_snapshots s3b
+                WHERE s3a.tweet_id = t.tweet_id
+                  AND s3b.tweet_id = t.tweet_id
+                  AND s3a.crawled_at = (
+                      SELECT MAX(crawled_at) FROM tweet_snapshots
+                      WHERE tweet_id = t.tweet_id
+                  )
+                  AND s3b.crawled_at = (
+                      SELECT crawled_at FROM tweet_snapshots
+                      WHERE tweet_id = t.tweet_id
+                      ORDER BY crawled_at DESC
+                      LIMIT 1 OFFSET 1
+                  )
+                LIMIT 1
+            )                                    AS elapsed_min
+        FROM tweets t
+        JOIN tweet_snapshots s ON t.tweet_id = s.tweet_id
+        JOIN (
+            SELECT tweet_id, MIN(crawled_at) AS first_crawled_at
+            FROM tweet_snapshots
+            GROUP BY tweet_id
+        ) fs ON t.tweet_id = fs.tweet_id
+        WHERE fs.first_crawled_at > ?
+        GROUP BY t.tweet_id
+        """,
         (cutoff.isoformat(),),
     )
     rows = cursor.fetchall()
@@ -475,7 +523,23 @@ async def poll_tracked_tweets(ctx: BrowserContext, conn: sqlite3.Connection) -> 
     page = await ctx.new_page()
     snapshot_count = 0
 
-    for tweet_id, author, _ in rows:
+    skipped_count = 0
+    for tweet_id, author, _, snap_count, last_likes, first_likes, prev_likes, elapsed_min in rows:
+        # Adaptive velocity filter: skip tweets that have had enough snapshots
+        # and are no longer growing fast enough to be worth tracking.
+        if snap_count >= cfg.POLL_MIN_SNAPSHOTS:
+            if prev_likes is not None and elapsed_min and elapsed_min > 0:
+                velocity = (last_likes - prev_likes) / elapsed_min
+            else:
+                velocity = float("inf")  # unknown — keep polling
+            if velocity < cfg.POLL_MIN_VELOCITY:
+                logger.debug(
+                    "Skipping tweet %s — velocity %.2f likes/min below threshold (%.1f).",
+                    tweet_id, velocity, cfg.POLL_MIN_VELOCITY,
+                )
+                skipped_count += 1
+                continue
+
         try:
             url = f"https://x.com/{author}/status/{tweet_id}"
             await page.goto(url, wait_until="domcontentloaded", timeout=30_000)
@@ -508,7 +572,10 @@ async def poll_tracked_tweets(ctx: BrowserContext, conn: sqlite3.Connection) -> 
         await asyncio.sleep(random.uniform(cfg.REQUEST_DELAY_MIN, cfg.REQUEST_DELAY_MAX))
 
     await page.close()
-    logger.info("Polling complete — %d snapshots stored.", snapshot_count)
+    logger.info(
+        "Polling complete — %d snapshots stored, %d tweets skipped (low velocity).",
+        snapshot_count, skipped_count,
+    )
     return snapshot_count
 
 

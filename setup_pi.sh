@@ -23,8 +23,12 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV="$REPO_DIR/.venv"
 PYTHON="$VENV/bin/python"
 PIP="$VENV/bin/pip"
-CRON_CMD="cd $REPO_DIR && $PYTHON -m src.scraping.main --discover-only --limit 50 >> $REPO_DIR/data/crawl.log 2>&1"
-CRON_SCHEDULE="0 9,12,15,18 * * 1-5"
+# Discovery: Mo-Fr at 09:00, 12:00, 15:00 -- finds new tweets
+CRON_DISCOVER_CMD="cd $REPO_DIR && $PYTHON -m src.scraping.main --discover-only --limit 50 >> $REPO_DIR/data/crawl.log 2>&1"
+CRON_DISCOVER_SCHEDULE="0 9,12,15 * * 1-5"
+# Polling: every 15 min Mo-Fr 09:00-18:00 -- tracks engagement of discovered tweets
+CRON_POLL_CMD="cd $REPO_DIR && $PYTHON -m src.scraping.main --poll-only >> $REPO_DIR/data/crawl.log 2>&1"
+CRON_POLL_SCHEDULE="*/30 9-18 * * 1-5"
 
 echo "=== WebMining Pi Setup ==="
 echo "Project root: $REPO_DIR"
@@ -104,21 +108,25 @@ mkdir -p "$REPO_DIR/data/raw/prices"
 # ---------------------------------------------------------------------------
 echo "[6/6] Cron job setup..."
 echo ""
-echo "Proposed cron schedule: Mo–Fr at 09:00, 12:00, 15:00, 18:00 (local time)"
-echo "Command: $CRON_CMD"
+echo "Two cron jobs will be installed:"
+echo "  Discovery ($CRON_DISCOVER_SCHEDULE): $CRON_DISCOVER_CMD"
+echo "  Polling   ($CRON_POLL_SCHEDULE): $CRON_POLL_CMD"
 echo ""
-read -r -p "Install cron job? [y/N] " answer
+read -r -p "Install cron jobs? [y/N] " answer
 if [[ "${answer,,}" == "y" ]]; then
-    CRON_LINE="$CRON_SCHEDULE $CRON_CMD"
-    # Remove existing entry for this repo to avoid duplicates
-    ( crontab -l 2>/dev/null | grep -v "$REPO_DIR" ; echo "$CRON_LINE" ) | crontab -
-    echo "    Cron job installed. Current crontab:"
+    # Remove existing entries for this repo to avoid duplicates, then add both
+    ( crontab -l 2>/dev/null | grep -v "$REPO_DIR" \
+        ; echo "$CRON_DISCOVER_SCHEDULE $CRON_DISCOVER_CMD" \
+        ; echo "$CRON_POLL_SCHEDULE $CRON_POLL_CMD" \
+    ) | crontab -
+    echo "    Cron jobs installed. Current crontab:"
     crontab -l | grep "$REPO_DIR"
 else
     echo "    Skipped. To add later, run:"
     echo "      crontab -e"
     echo "    And add:"
-    echo "      $CRON_SCHEDULE $CRON_CMD"
+    echo "      $CRON_DISCOVER_SCHEDULE $CRON_DISCOVER_CMD"
+    echo "      $CRON_POLL_SCHEDULE $CRON_POLL_CMD"
 fi
 
 # ---------------------------------------------------------------------------
@@ -144,5 +152,9 @@ echo "         c = sqlite3.connect(db)"
 echo "         print('Tweets:', c.execute('SELECT COUNT(*) FROM tweets').fetchone()[0])"
 echo "     \""
 echo ""
-echo "  4. Full run (discovery + 2h polling):"
+echo "  4. Full run (discovery + 8h polling loop):"
 echo "     python -m src.scraping.main --limit 50"
+echo ""
+echo "  5. Or run discovery and polling separately (recommended for cron):"
+echo "     python -m src.scraping.main --discover-only --limit 50"
+echo "     python -m src.scraping.main --poll-only"

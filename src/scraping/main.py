@@ -3,6 +3,7 @@
 Usage:
     python -m src.scraping.main                        # full run with defaults
     python -m src.scraping.main --discover-only        # discover tweets, skip polling
+    python -m src.scraping.main --poll-only            # poll tracked tweets, skip discovery
     python -m src.scraping.main --limit 50             # cap tweets per query
     python -m src.scraping.main --queries '$TSLA lang:en' '#crypto lang:en'
 """
@@ -43,6 +44,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Run discovery pass only — skip the polling loop.",
     )
+    parser.add_argument(
+        "--poll-only",
+        action="store_true",
+        help="Poll engagement for tracked tweets only — skip discovery.",
+    )
     return parser.parse_args(argv)
 
 
@@ -65,6 +71,23 @@ def main(argv: list[str] | None = None) -> None:
                 conn.close()
 
         asyncio.run(_discover())
+
+    elif args.poll_only:
+        from src.scraping.db import get_db
+
+        async def _poll() -> None:
+            conn = get_db()
+            pw, browser, ctx = await x_crawler._launch_browser_context()
+            try:
+                n = await x_crawler.poll_tracked_tweets(ctx, conn)
+                logger.info("Poll-only run complete — %d snapshots stored.", n)
+            finally:
+                await browser.close()
+                await pw.stop()
+                conn.close()
+
+        asyncio.run(_poll())
+
     else:
         asyncio.run(x_crawler.run(queries=args.queries, limit=args.limit))
 
