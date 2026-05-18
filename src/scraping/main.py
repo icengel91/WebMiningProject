@@ -11,9 +11,37 @@ Usage:
 import argparse
 import asyncio
 import logging
+import os
 import sys
+from pathlib import Path
 
 from src.scraping import x_crawler
+
+_LOCK_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "crawler.lock"
+
+
+def _acquire_lock() -> None:
+    """Write a PID lock file; exit immediately if another instance is running."""
+    if _LOCK_FILE.exists():
+        existing_pid = _LOCK_FILE.read_text().strip()
+        try:
+            # Signal 0 checks existence without killing the process
+            os.kill(int(existing_pid), 0)
+            logging.getLogger(__name__).warning(
+                "Crawler already running (PID %s). Exiting.", existing_pid
+            )
+            sys.exit(0)
+        except (ProcessLookupError, ValueError):
+            # Stale lock file — previous run crashed without cleanup
+            pass
+    _LOCK_FILE.write_text(str(os.getpid()))
+
+
+def _release_lock() -> None:
+    try:
+        _LOCK_FILE.unlink()
+    except FileNotFoundError:
+        pass
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,7 +82,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     args = _parse_args(argv)
+    _acquire_lock()
 
+    try:
+        _run(args)
+    finally:
+        _release_lock()
+
+
+def _run(args: argparse.Namespace) -> None:
     if args.discover_only:
         from src.scraping.db import get_db
 
