@@ -116,39 +116,64 @@ QUERIES: list[str] = [
     "#TotalEnergies lang:en",
     "#TotalEnergiesStock lang:en",
     "#TotalEnergiesEarnings lang:en",
+    # TotalEnergies — Französisch / French
+    "$TTE lang:fr",
+    "#TotalEnergies lang:fr",
 
     "$ENI lang:en",
     "#Eni lang:en",
     "#EniStock lang:en",
     "#EniEarnings lang:en",
+    # Eni — Italienisch / Italian
+    "$ENI lang:it",
+    "#Eni lang:it",
+    "#EniSpa lang:it",
 
     # ---------------------------------------------------------------------------
     # Wärmepumpe / Heat pump manufacturers
     # ---------------------------------------------------------------------------
 
     # Daikin Industries (6367.T)
-    "$6367.T lang:en",
+    # Note: $6367.T removed — Tokyo ticker format, nobody uses it as a cashtag on Twitter
     "#Daikin lang:en",
     "#DaikinStock lang:en",
     "#DaikinHeatPump lang:en",
+    # Daikin — Japanisch / Japanese
+    "#Daikin lang:ja",
+    "#ダイキン lang:ja",
 
     # NIBE Industrier (NIBE-B.ST)
     "#NIBE lang:en",
     "#NIBEStock lang:en",
     "#NIBEHeatPump lang:en",
+    # NIBE — Schwedisch / Swedish
+    "#NIBE lang:sv",
+    # NIBE — Deutsch / German (NIBE Wärmepumpen stark in DE-Markt)
+    "#NIBE lang:de",
+    "#NIBEWärmepumpe lang:de",
 
+    # Carrier Global (CARR) — inkl. Tochter Viessmann
+    "$CARR lang:en",
+    "#CarrierGlobal lang:en",
+    "#CARR lang:en",
     # Viessmann — Tochter von Carrier Global (CARR), kein eigener Ticker
     "#Viessmann lang:en",
     "#ViessmannHeatPump lang:en",
+    # Viessmann — Deutsch / German
+    "#Viessmann lang:de",
+    "#ViessmannWärmepumpe lang:de",
 
     # Vaillant — nicht börsennotiert, nur Hashtags
     "#Vaillant lang:en",
     "#VaillantHeatPump lang:en",
 
     # Mitsubishi Electric (6503.T)
-    "$6503.T lang:en",
+    # Note: $6503.T removed — Tokyo ticker format, nobody uses it as a cashtag on Twitter
     "#MitsubishiElectric lang:en",
     "#Ecodan lang:en",
+    # Mitsubishi Electric — Japanisch / Japanese
+    "#MitsubishiElectric lang:ja",
+    "#三菱電機 lang:ja",
 
     # ---------------------------------------------------------------------------
     # Automobilbranche — Tesla (TSLA)
@@ -177,6 +202,11 @@ QUERIES: list[str] = [
     "#VW lang:en",
     "#VWStock lang:en",
     "#VWEarnings lang:en",
+    # Volkswagen — Deutsch / German
+    "$VOW lang:de",
+    "#Volkswagen lang:de",
+    "#VW lang:de",
+    "#VWAktie lang:de",
 
     # ---------------------------------------------------------------------------
     # Automobilbranche — Hyundai (HYMTF)

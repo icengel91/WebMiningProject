@@ -134,7 +134,7 @@ async def _scrape_search_page(
 
     try:
         await page.wait_for_selector(
-            'article[data-testid="tweet"]', timeout=20_000,
+            'article[data-testid="tweet"]', timeout=30_000,
         )
     except Exception:
         logger.warning("No tweets loaded for query '%s'.", query)
@@ -251,7 +251,7 @@ async def _get_follower_count(page: Page, username: str) -> int:
             timeout=30_000,
         )
         await page.wait_for_selector(
-            'a[href$="/verified_followers"]', timeout=10_000,
+            'a[href$="/verified_followers"]', timeout=30_000,
         )
         followers_link = await page.query_selector('a[href$="/verified_followers"]')
         if not followers_link:
@@ -439,18 +439,22 @@ async def _fetch_price_window(
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = data.columns.get_level_values(0)
 
-        for ts, row in data.iterrows():
-            store_price_snapshot(
-                conn,
-                tweet_id=tweet_id,
-                symbol=symbol,
-                timestamp=ts.isoformat(),
-                price=float(row["Close"]),
-                volume=int(row["Volume"]),
-            )
-        logger.info("Stored %d price rows for tweet %s.", len(data), tweet_id)
+        # Single transaction for all rows — avoids lock starvation from
+        # 150 individual BEGIN/INSERT/COMMIT cycles competing with the poll job.
+        price_rows = [
+            (tweet_id, symbol, ts.isoformat(), float(row["Close"]), int(row["Volume"]))
+            for ts, row in data.iterrows()
+        ]
+        conn.executemany(
+            "INSERT INTO price_snapshots (tweet_id, symbol, timestamp, price, volume) "
+            "VALUES (?, ?, ?, ?, ?)",
+            price_rows,
+        )
+        conn.commit()
+        logger.info("Stored %d price rows for tweet %s.", len(price_rows), tweet_id)
 
     except Exception:
+        conn.rollback()
         logger.exception("Failed to fetch prices for %s", symbol)
 
 
@@ -544,7 +548,7 @@ async def poll_tracked_tweets(ctx: BrowserContext, conn: sqlite3.Connection) -> 
             url = f"https://x.com/{author}/status/{tweet_id}"
             await page.goto(url, wait_until="domcontentloaded", timeout=30_000)
             await page.wait_for_selector(
-                'article[data-testid="tweet"]', timeout=10_000,
+                'article[data-testid="tweet"]', timeout=30_000,
             )
             article = await page.query_selector('article[data-testid="tweet"]')
             if article is None:
@@ -568,6 +572,10 @@ async def poll_tracked_tweets(ctx: BrowserContext, conn: sqlite3.Connection) -> 
             )
         except Exception:
             logger.exception("Error polling tweet %s", tweet_id)
+            try:
+                conn.rollback()
+            except Exception:
+                pass
 
         await asyncio.sleep(random.uniform(cfg.REQUEST_DELAY_MIN, cfg.REQUEST_DELAY_MAX))
 
