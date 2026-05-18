@@ -1,6 +1,23 @@
 # Stock tickers to fetch with the price crawler.
 # Edit this list to add or remove tickers — no code changes needed.
 
+# Tickers highlighted in the EDA and sentiment analysis.
+# These are the focus companies for the project.
+focus_tickers:
+  - BP
+  - XOM
+  - SHEL
+  - TTE
+  - E
+  - 6367.T
+  - NIBE-B.ST
+  - CARR
+  - 6503.T
+  - TSLA
+  - BYDDY
+  - VWAGY
+  - HYMTF
+
 tickers:
   # ---------------------------------------------------------------------------
   # Mineralölkonzerne / Oil majors
