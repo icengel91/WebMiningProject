@@ -80,6 +80,7 @@ def store_tweet(
         conn.commit()
         return True
     except sqlite3.IntegrityError:
+        conn.rollback()
         logger.debug("Tweet %s already stored, skipping.", tweet_id)
         return False
 
