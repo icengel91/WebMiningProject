@@ -16,10 +16,17 @@ beautifulsoup4>=4.12
 transformers>=4.35
 torch>=2.1
 vaderSentiment>=3.3.2
+sentencepiece>=0.1.99
+tiktoken>=0.5
+pyarrow>=14.0
 
 # Finance
 yfinance>=0.2.28
 schedule>=1.2
+
+# Statistics
+statsmodels>=0.14
+scipy>=1.11
 
 # Visualization
 matplotlib>=3.8

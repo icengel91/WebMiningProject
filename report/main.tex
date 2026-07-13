@@ -1,0 +1,125 @@
+\documentclass[12pt, a4paper]{article}
+
+% ── Encoding & Language ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+
+% ── Layout ───────────────────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ── Fonts ────────────────────────────────────────────────────────────────────
+\usepackage{lmodern}
+
+% ── Math ─────────────────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb}
+
+% ── Tables ───────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{float}
+
+% ── Graphics ─────────────────────────────────────────────────────────────────
+\usepackage{graphicx}
+\usepackage[labelfont=bf, skip=6pt]{caption}
+\usepackage{subcaption}
+\graphicspath{{figures/}{figures/02_sentiment_analysis/}{figures/03_correlation_modeling/}}
+
+% ── Colors ───────────────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\definecolor{linkblue}{HTML}{1A5276}
+
+% ── Hyperlinks ───────────────────────────────────────────────────────────────
+\usepackage[
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+  pdfauthor={Ilker},
+  pdftitle={Web Mining: Sentiment-Analyse von X (Twitter) und Aktienkursrenditen},
+]{hyperref}
+\usepackage{url}
+
+% ── Code listings ────────────────────────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{orange!80!black},
+}
+
+% ── Bibliography ─────────────────────────────────────────────────────────────
+\usepackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt,
+  maxnames=3,
+]{biblatex}
+\addbibresource{references.bib}
+
+% ── Misc ─────────────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{document}
+
+% ── Title Page ───────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\LARGE\bfseries Web Mining: Sentiment-Analyse von X\,(Twitter)\\
+  und Aktienkursrenditen\par}
+
+  \vspace{1.5cm}
+  {\large Modularbeit im Rahmen des Moduls \textit{Web Mining}\\
+  M.\,Sc. Data Science\par}
+
+  \vspace{2cm}
+  {\large Ilker\par}
+
+  \vspace{0.5cm}
+  {\normalsize Hochschule\par}
+
+  \vfill
+  {\normalsize \today\par}
+\end{titlepage}
+
+% ── Table of Contents ────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ── Sections ─────────────────────────────────────────────────────────────────
+\input{sections/01_einleitung}
+\newpage
+
+\input{sections/02_methodik}
+\newpage
+
+\input{sections/03_ergebnisse}
+\newpage
+
+\input{sections/04_diskussion}
+\newpage
+
+\input{sections/05_fazit}
+\newpage
+
+% ── Bibliography ─────────────────────────────────────────────────────────────
+\printbibliography[heading=bibintoc, title={Literaturverzeichnis}]
+
+\end{document}

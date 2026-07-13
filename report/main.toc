@@ -1,0 +1,26 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {section}{\numberline {1}Einleitung}{2}{section.1}%
+\contentsline {section}{\numberline {2}Methodik}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Datenerhebung und explorative Qualitätsprüfung}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Sentiment-Analyse}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Korrelationsmodellierung}{8}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Ergebnisse}{12}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Abdeckung und Overlap}{12}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Sentiment-Verteilung}{13}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Lag-Korrelation}{14}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Rolling-Korrelation}{16}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Granger-Kausalitätstest}{16}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Event-Study}{17}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Diskussion}{19}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Interpretation der Ergebnisse}{19}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Limitationen}{19}{subsection.4.2}%
+\contentsline {paragraph}{Multiples Testen.}{19}{section*.31}%
+\contentsline {paragraph}{Stationarität.}{19}{section*.32}%
+\contentsline {paragraph}{Beobachtungszeitraum.}{19}{section*.33}%
+\contentsline {paragraph}{Ungleiche Abdeckung.}{20}{section*.34}%
+\contentsline {paragraph}{Crawler-Einschränkungen.}{20}{section*.35}%
+\contentsline {paragraph}{Aggregationsebene.}{20}{section*.36}%
+\contentsline {paragraph}{Kausalität und Konfundierung.}{20}{section*.37}%
+\contentsline {subsection}{\numberline {4.3}Einordnung in den Forschungskontext}{20}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Fazit}{21}{section.5}%
+\contentsline {section}{Literaturverzeichnis}{22}{section*.38}%

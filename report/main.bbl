@@ -1,0 +1,421 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{benjamini1995controlling}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=2bf06df9b6fb1b6a6811f2965ef58db2}{%
+           family={Benjamini},
+           familyi={B\bibinitperiod},
+           given={Yoav},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=486dfb83d695169656e5706b50266208}{%
+           family={Hochberg},
+           familyi={H\bibinitperiod},
+           given={Yosef},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{fullhash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{fullhashraw}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{bibnamehash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{authorbibnamehash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{authornamehash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{authorfullhash}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \strng{authorfullhashraw}{0ba4be1a60b0ea36e468eb3f8db88a98}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the Royal Statistical Society: Series B (Methodological)}
+      \field{number}{1}
+      \field{title}{Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing}
+      \field{volume}{57}
+      \field{year}{1995}
+      \field{pages}{289\bibrangedash 300}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1111/j.2517-6161.1995.tb02031.x
+      \endverb
+    \endentry
+    \entry{bollen2011twitter}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=a7311f3ee6641339f0b1463c4f424817}{%
+           family={Bollen},
+           familyi={B\bibinitperiod},
+           given={Johan},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=5f5c5f0326aebe1320da9686839f2169}{%
+           family={Mao},
+           familyi={M\bibinitperiod},
+           given={Huina},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e25b79e06e29e6a0d6d9ab60c076215c}{%
+           family={Zeng},
+           familyi={Z\bibinitperiod},
+           given={Xiaojun},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{fullhash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{fullhashraw}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{bibnamehash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{authorbibnamehash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{authornamehash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{authorfullhash}{270a29010029d182c7b09e64b09ce2ce}
+      \strng{authorfullhashraw}{270a29010029d182c7b09e64b09ce2ce}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Computational Science}
+      \field{number}{1}
+      \field{title}{Twitter mood predicts the stock market}
+      \field{volume}{2}
+      \field{year}{2011}
+      \field{pages}{1\bibrangedash 8}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1016/j.jocs.2010.12.007
+      \endverb
+    \endentry
+    \entry{conneau2020unsupervised}{article}{}{}
+      \name{author}{10}{}{%
+        {{un=0,uniquepart=base,hash=7cf7ac6a9456559cc67ee138c7f21cec}{%
+           family={Conneau},
+           familyi={C\bibinitperiod},
+           given={Alexis},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9e9a1e2c7a348addec1212ed39541436}{%
+           family={Khandelwal},
+           familyi={K\bibinitperiod},
+           given={Kartikay},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=78a420900f50a8470ad085fb05231bf6}{%
+           family={Goyal},
+           familyi={G\bibinitperiod},
+           given={Naman},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f2b6a497c32b61dbbfc24edec6778700}{%
+           family={Chaudhary},
+           familyi={C\bibinitperiod},
+           given={Vishrav},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a9187426ad03289115e1167fcbb50a3e}{%
+           family={Wenzek},
+           familyi={W\bibinitperiod},
+           given={Guillaume},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f2e3a540fe772c40c15564f8e6056c14}{%
+           family={Guzmán},
+           familyi={G\bibinitperiod},
+           given={Francisco},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ebdea2c3aa9f759075733b20dce6b873}{%
+           family={Grave},
+           familyi={G\bibinitperiod},
+           given={Edouard},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b13aa2bad5258fa5ef7a733f2d305a49}{%
+           family={Ott},
+           familyi={O\bibinitperiod},
+           given={Myle},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1dbd3a5b42828fb2cebd7786488ba425}{%
+           family={Zettlemoyer},
+           familyi={Z\bibinitperiod},
+           given={Luke},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9b97236dd2d1a104fc5cf9660dd5582e}{%
+           family={Stoyanov},
+           familyi={S\bibinitperiod},
+           given={Veselin},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{2916bb4d39f814823624e9e16627e23a}
+      \strng{fullhash}{caec96fdd725afa21762b0ec790cf812}
+      \strng{fullhashraw}{caec96fdd725afa21762b0ec790cf812}
+      \strng{bibnamehash}{2916bb4d39f814823624e9e16627e23a}
+      \strng{authorbibnamehash}{2916bb4d39f814823624e9e16627e23a}
+      \strng{authornamehash}{2916bb4d39f814823624e9e16627e23a}
+      \strng{authorfullhash}{caec96fdd725afa21762b0ec790cf812}
+      \strng{authorfullhashraw}{caec96fdd725afa21762b0ec790cf812}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)}
+      \field{title}{Unsupervised Cross-Lingual Representation Learning at Scale}
+      \field{year}{2020}
+      \field{pages}{8440\bibrangedash 8451}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.18653/v1/2020.acl-main.747
+      \endverb
+    \endentry
+    \entry{dickey1979distribution}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=f71b803d01236b0fcd2bb3e25e740864}{%
+           family={Dickey},
+           familyi={D\bibinitperiod},
+           given={David\bibnamedelima A.},
+           giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c387dbcd083b0685a01bb3f63c78387a}{%
+           family={Fuller},
+           familyi={F\bibinitperiod},
+           given={Wayne\bibnamedelima A.},
+           giveni={W\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{bibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorbibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authornamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American Statistical Association}
+      \field{number}{366}
+      \field{title}{Distribution of the Estimators for Autoregressive Time Series with a Unit Root}
+      \field{volume}{74}
+      \field{year}{1979}
+      \field{pages}{427\bibrangedash 431}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1080/01621459.1979.10482531
+      \endverb
+    \endentry
+    \entry{granger1969investigating}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=d97fcd65b851bd0d341ce547227991a3}{%
+           family={Granger},
+           familyi={G\bibinitperiod},
+           given={Clive\bibnamedelimb W.\bibnamedelimi J.},
+           giveni={C\bibinitperiod\bibinitdelim W\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{fullhash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{fullhashraw}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{bibnamehash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{authorbibnamehash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{authornamehash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{authorfullhash}{d97fcd65b851bd0d341ce547227991a3}
+      \strng{authorfullhashraw}{d97fcd65b851bd0d341ce547227991a3}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Econometrica}
+      \field{number}{3}
+      \field{title}{Investigating causal relations by econometric models and cross-spectral methods}
+      \field{volume}{37}
+      \field{year}{1969}
+      \field{pages}{424\bibrangedash 438}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.2307/1912791
+      \endverb
+    \endentry
+    \entry{hutto2014vader}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=73950ec510876cdb0bf7953421906fcd}{%
+           family={Hutto},
+           familyi={H\bibinitperiod},
+           given={Clayton\bibnamedelima J.},
+           giveni={C\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c3163690c9103d2541d6910886053ba6}{%
+           family={Gilbert},
+           familyi={G\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {AAAI Press}%
+      }
+      \strng{namehash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{fullhash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{fullhashraw}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{bibnamehash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{authorbibnamehash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{authornamehash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{authorfullhash}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \strng{authorfullhashraw}{d9b8fcad43d62d108d0f2e93350acc9b}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 8th International Conference on Weblogs and Social Media (ICWSM)}
+      \field{title}{{VADER}: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text}
+      \field{year}{2014}
+    \endentry
+    \entry{loureiro2022timelms}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=4c247ca09eac6a9145d254f8f65eb4c6}{%
+           family={Loureiro},
+           familyi={L\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b64d1968ad5f32b4d64cddb2507cac31}{%
+           family={Barbieri},
+           familyi={B\bibinitperiod},
+           given={Francesco},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1a813ab78d5a234506dd6dd48fddd130}{%
+           family={Neves},
+           familyi={N\bibinitperiod},
+           given={Leonardo},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1353d9f3c6e779735a8f32a5b1b8e7b9}{%
+           family={Anke},
+           familyi={A\bibinitperiod},
+           given={Luis\bibnamedelima Espinosa},
+           giveni={L\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=5a2c6234f337c9ad9aa4745a4bfbb3ee}{%
+           family={Camacho-Collados},
+           familyi={C\bibinithyphendelim C\bibinitperiod},
+           given={Jose},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ad50a84d91c614d7d35db494d0e7fe63}
+      \strng{fullhash}{158ba5f963ecf00384c4cc215fa3b332}
+      \strng{fullhashraw}{158ba5f963ecf00384c4cc215fa3b332}
+      \strng{bibnamehash}{ad50a84d91c614d7d35db494d0e7fe63}
+      \strng{authorbibnamehash}{ad50a84d91c614d7d35db494d0e7fe63}
+      \strng{authornamehash}{ad50a84d91c614d7d35db494d0e7fe63}
+      \strng{authorfullhash}{158ba5f963ecf00384c4cc215fa3b332}
+      \strng{authorfullhashraw}{158ba5f963ecf00384c4cc215fa3b332}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics: System Demonstrations}
+      \field{title}{{T}ime{LMs}: Diachronic Language Models from Twitter}
+      \field{year}{2022}
+      \field{pages}{251\bibrangedash 260}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.18653/v1/2022.acl-demo.25
+      \endverb
+    \endentry
+    \entry{ranco2015effects}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=271d00985c8b18772af759a6b6e071fe}{%
+           family={Ranco},
+           familyi={R\bibinitperiod},
+           given={Gabriele},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0d016cae6debdf71e2f0bf9acdbdac90}{%
+           family={Aleksovski},
+           familyi={A\bibinitperiod},
+           given={Darko},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e7b00e797d140adf1c921c6c2e28ace3}{%
+           family={Caldarelli},
+           familyi={C\bibinitperiod},
+           given={Guido},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2a6fd38f75a2b6a81431fe27e24ad5ac}{%
+           family={Grcar},
+           familyi={G\bibinitperiod},
+           given={Miha},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ec82da58e1eb2a9d2999a2d4bd7345f6}{%
+           family={Mozetic},
+           familyi={M\bibinitperiod},
+           given={Igor},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{dab112c320c026a468ae96e4d84a220f}
+      \strng{fullhash}{e997290522edcf5c4e6caa99665d12c6}
+      \strng{fullhashraw}{e997290522edcf5c4e6caa99665d12c6}
+      \strng{bibnamehash}{dab112c320c026a468ae96e4d84a220f}
+      \strng{authorbibnamehash}{dab112c320c026a468ae96e4d84a220f}
+      \strng{authornamehash}{dab112c320c026a468ae96e4d84a220f}
+      \strng{authorfullhash}{e997290522edcf5c4e6caa99665d12c6}
+      \strng{authorfullhashraw}{e997290522edcf5c4e6caa99665d12c6}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{PLOS ONE}
+      \field{number}{9}
+      \field{title}{The effects of Twitter sentiment on stock price returns}
+      \field{volume}{10}
+      \field{year}{2015}
+      \field{pages}{e0138441}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.1371/journal.pone.0138441
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

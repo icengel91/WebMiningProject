@@ -1,0 +1,35 @@
+\section{Diskussion}
+\label{sec:diskussion}
+
+\subsection{Interpretation der Ergebnisse}
+
+Die Ergebnisse dieser Arbeit liefern keinen robusten, allgemeingültigen Beleg dafür, dass Sentiment-Signale auf X\,(Twitter) Aktienkursrenditen im Beobachtungszeitraum systematisch vorausgingen oder statistisch zuverlässig mit ihnen zusammenhingen. Ohne Korrektur für multiples Testen wies lediglich 6367.T\,(Daikin) auf Lag~1 einen $p$-Wert unter 0,05 auf ($r = -0.636$, $p_{\mathrm{roh}} = 0.048$). Nach Anwendung der Benjamini-Hochberg-FDR-Korrektur \autocite{benjamini1995controlling} über alle 40 simultan durchgeführten Tests stieg dieser Wert auf $p_{\mathrm{adj}} = 0.830$; der Befund ist damit als zufälliger Treffer einzuschätzen. Das 95\,\%-Konfidenzintervall $[-0.904, -0.011]$ bei $n = 10$ verdeutlicht die erhebliche Schätzunsicherheit zusätzlich.
+
+Für die Ticker mit größerer Abdeckung (TSLA, VWAGY, XOM, BYDDY) zeigten sich durchgängig schwache und statistisch nicht signifikante Korrelationskoeffizienten. Auch die Rolling-Korrelation lieferte keine konsistenten Phasen mit robustem Zusammenhang. Der Granger-Test blieb für alle getesteten Ticker ohne signifikantes Ergebnis. Die Event-Study zeigte zwar für einzelne Unternehmen erkennbare CAR-Muster rund um extreme Sentiment-Tage, ein unternehmensübergreifend interpretierbares Signal war jedoch nicht vorhanden.
+
+\subsection{Limitationen}
+
+\paragraph{Multiples Testen.}
+Die Lag-Korrelationsanalyse umfasst bis zu 40 simultane Tests (10 Ticker $\times$ 4 Lags). Ohne Korrektur besteht eine hohe Wahrscheinlichkeit für zufällige Signifikanzbefunde. Nach Anwendung der Benjamini-Hochberg-Methode \autocite{benjamini1995controlling} verbleibt kein Test unter der Signifikanzschwelle -- ein Befund, der die Null-Hypothese bestätigt und nicht schwächt.
+
+\paragraph{Stationarität.}
+Der Granger-Test setzt Stationarität der Eingangszeitreihen voraus. Für alle vier Ticker, die den Granger-Test durchliefen, wurden beide Reihen (Sentiment-Signal und tägliche Renditen) vorab mit dem ADF-Test geprüft \autocite{dickey1979distribution}. Sämtliche Reihen wiesen $p < 0{,}001$ auf -- die Stationaritätsvoraussetzung war erfüllt.
+
+\paragraph{Beobachtungszeitraum.}
+Die zentrale Einschränkung dieser Arbeit ist die kurze Überlappungszeit zwischen den verfügbaren Sentiment-Daten und den Tagespreisen. Der nutzbare Zeitraum umfasste nur etwa vier Monate (Januar bis April 2026). Dies führt zu geringen Stichprobengrößen, insbesondere für Ticker mit seltenerer Tweet-Aktivität. Viele statistische Methoden -- insbesondere Granger-Tests und Rolling-Korrelationen -- setzten Mindestbeobachtungszahlen voraus, die nur für eine Teilmenge der Fokus-Ticker erfüllt waren. Die statistische Power der gesamten Analyse ist damit grundsätzlich begrenzt.
+
+\paragraph{Ungleiche Abdeckung.}
+Die Tweet-Aktivität war stark auf einzelne Ticker konzentriert. TSLA vereinte allein fast die Hälfte aller Sentiment-Tage. Unternehmen wie NIBE\,(NIBE-B.ST) oder Carrier\,(CARR) hatten im Untersuchungszeitraum kaum Erwähnung auf X\,(Twitter), sodass für diese Ticker keine aussagekräftigen Analysen möglich waren.
+
+\paragraph{Crawler-Einschränkungen.}
+Die Datenerhebung über X\,(Twitter) unterliegt technischen und rechtlichen Einschränkungen. Es ist anzunehmen, dass nicht alle relevanten Tweets erfasst wurden. Insbesondere Beiträge mit geringer Sichtbarkeit oder von kleineren Accounts könnten systematisch unterrepräsentiert sein.
+
+\paragraph{Aggregationsebene.}
+Die Analyse auf Tagesbasis kann intraday auftretende Zusammenhänge zwischen Sentiment und Kursreaktion nicht erfassen. Gerade bei News-getriebenen Kursausschlägen wäre eine höhere zeitliche Auflösung wünschenswert.
+
+\paragraph{Kausalität und Konfundierung.}
+Selbst bei signifikanten Korrelationen oder positiven Granger-Tests wäre keine kausale Interpretation zulässig. Sowohl Sentiment als auch Renditen können gemeinsam von externen Faktoren (z.\,B.\ Konjunkturdaten, geopolitische Ereignisse, Analystenmeinungen) getrieben werden, ohne dass ein direkter Wirkungspfad zwischen ihnen besteht.
+
+\subsection{Einordnung in den Forschungskontext}
+
+Die vorliegende Arbeit reiht sich in ein breites Forschungsfeld ein, das sich mit der Vorhersagbarkeit von Aktienrenditen durch Social-Media-Daten befasst. Frühe Studien, darunter \textcite{bollen2011twitter}, berichteten von positiven Ergebnissen bei der Nutzung von Twitter-Sentiment zur Vorhersage des Dow-Jones-Index. Spätere Replikationsstudien zeigten jedoch, dass solche Zusammenhänge häufig instabil, zeitraumabhängig und schwer generalisierbar sind \autocite{ranco2015effects}. Die vorliegende Arbeit bestätigt diesen vorsichtigen Befund: Ein generelles prädiktives Signal aus Social-Media-Sentiment ist im kurzen Untersuchungszeitraum nicht nachweisbar.

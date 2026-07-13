@@ -1,243 +1,39 @@
-# Web Mining – X Crawler for Stock Market Sentiment
+# Web Mining — Project Plan
 
-## Research Goal
+## Research Question
 
-Investigating the influence of viral social media posts on stock prices.
-**Core question:** Can viral posts on X (Twitter) trigger measurable price changes?
+Does X (Twitter) sentiment for energy/EV/auto stocks predict or follow price movements?
 
----
+## Status
 
-## Methodological Design
+| Phase | Status |
+|-------|--------|
+| X crawler (twscrape + SQLite) | ✓ Complete |
+| Price fetcher (yfinance) | ✓ Complete |
+| NB01 — Data Quality EDA | ✓ Complete |
+| NB02 — Sentiment Analysis (XLM-RoBERTa + VADER) | ✓ Complete |
+| NB03 — Correlation Modeling | ✓ Complete |
+| Final report (German) | ⏳ In progress |
 
-### What is measured
+## Focus Tickers (12)
 
-| Data Point | Description |
-|---|---|
-| Tweets | Filtered by trading hashtags & cashtags |
-| Engagement growth | Likes/Retweets over time (polling loop) |
-| Virality factor | Account size (followers) as a weighting factor |
-| Stock prices | Time window **before and after** the tweet |
+TSLA, VWAGY, XOM, BYDDY, BP, TTE, 6503.T, 6367.T, E, CARR, SHEL, NIBE-B.ST
 
-### Important Methodological Note
+## Key Methodological Decisions
 
-The causality problem must be addressed in the written report:
-Price changes following a viral post may have **confounding variables**
-(e.g. simultaneous company news, broader market trends). Phrasing: *"Correlation, not
-necessarily causation"*.
+- Sentiment signal: `weighted_xlm_compound` (follower-weighted XLM score)
+- Language filter: langdetect; VADER EN-only
+- Min 10 aligned days per ticker; Granger needs ≥30
+- Lag analysis: 0–3 trading days; event study ±5 days around >1σ spikes
 
----
+## Core Finding
 
-## Crawler Architecture
+No significant correlations for most tickers. Only 6367.T Lag 1 is significant (r = −0.636, p = 0.048). No Granger causality in either direction. Likely cause: short data overlap (~4 months).
 
-### Technology Stack
+## Report Outline
 
-- **`twscrape`** – uses X's internal web API (no paid API subscription needed)
-- **`yfinance`** – stock price data at minute-level granularity
-- **`sqlite3`** – local data storage
-- **`asyncio`** – asynchronous polling loop
-
-```bash
-pip install twscrape yfinance
-```
-
-### Search Strategy
-
-```python
-QUERIES = [
-    # --- Energie / Oil & Gas ---
-    "#oilprice lang:en", "#oilprices lang:en", "#energystocks lang:en",
-    "#crudeoil lang:en", "#oil lang:en", "#OPEC lang:en", "#naturalgas lang:en",
-    "#Ölpreis lang:de", "#Energie lang:de", "#Erdöl lang:de", "#Benzinpreis lang:de",
-    "$XOM lang:en",  "$CVX lang:en",  "$SHEL lang:en",  "$BP lang:en",
-    "$RWE lang:de OR lang:en",
-
-    # --- Ölpumpen / Oilfield Services ---
-    "#oilfieldservices lang:en", "#oildrilling lang:en",
-    "#Ölförderung lang:de", "#Ölbohrung lang:de",
-    "$BKR lang:en",
-
-    # --- Erneuerbare Energien / Renewables ---
-    "#renewableenergy lang:en", "#renewables lang:en", "#solarenergy lang:en",
-    "#solarstocks lang:en", "#cleanenergy lang:en", "#greenenergy lang:en",
-    "#solarpanels lang:en", "#heatpump lang:en", "#heatpumps lang:en",
-    "#photovoltaic lang:en", "#gasboiler lang:en", "#gasheating lang:en",
-    "#ErneuerbareEnergien lang:de", "#Solarenergie lang:de", "#Energiewende lang:de",
-    "#Windenergie lang:de", "#Wärmepumpe lang:de", "#Wärmepumpen lang:de",
-    "#Photovoltaik lang:de", "#Solaranlage lang:de", "#Gasheizung lang:de",
-    "#Heizungswechsel lang:de", "#GEG lang:de",
-    "$ENPH lang:en", "$SEDG lang:en",
-
-    # --- Edelmetalle / Precious Metals ---
-    "#gold lang:en", "#goldinvesting lang:en", "#goldprice lang:en",
-    "#silver lang:en", "#silverprice lang:en", "#preciousmetals lang:en",
-    "#safehaven lang:en",
-    "#Goldpreis lang:de", "#Silberpreis lang:de", "#Edelmetalle lang:de",
-    "$GLD lang:en", "$SLV lang:en", "$NEM lang:en", "$GOLD lang:en",
-
-    # --- Waffenindustrie / Defense ---
-    "#defensestocks lang:en", "#defense lang:en", "#defenseindustry lang:en",
-    "#militaryspending lang:en", "#armsrace lang:en",
-    "#Rüstung lang:de", "#Rüstungsindustrie lang:de",
-    "#Verteidigung lang:de", "#Waffenindustrie lang:de",
-    "$LMT lang:en", "$RTX lang:en", "$NOC lang:en",
-    "$RHM lang:de OR lang:en",
-
-    # --- Automobil / Electric Vehicles ---
-    "#EVstocks lang:en", "#electricvehicle lang:en", "#electriccars lang:en",
-    "#EVsales lang:en", "#EV lang:en",
-    "#Elektroauto lang:de", "#Elektromobilität lang:de",
-    "#Autoindustrie lang:de", "#Autobranche lang:de",
-    "#Automobilbranche lang:de", "#Verkaufszahlen lang:de",
-    "$TSLA lang:en", "$NIO lang:en", "$RIVN lang:en", "$BYDDF lang:en",
-    "$VWAGY lang:en", "$BMWYY lang:en", "$TM lang:en",
-]
-
-# Dynamically: follower threshold
-MIN_FOLLOWERS = 100
-MIN_LIKES = 500
-```
-
----
-
-## Database Schema
-
-```sql
--- Core table: one entry per discovered tweet
-CREATE TABLE tweets (
-    tweet_id         TEXT PRIMARY KEY,
-    author           TEXT,
-    author_followers INTEGER,
-    content          TEXT,
-    posted_at        TEXT,   -- ISO 8601 timestamp
-    symbol           TEXT    -- e.g. "$TSLA"
-);
-
--- Polling table: crawled multiple times over time
--- → allows reconstruction of the engagement growth curve
-CREATE TABLE tweet_snapshots (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    tweet_id    TEXT REFERENCES tweets(tweet_id),
-    crawled_at  TEXT,   -- timestamp of this snapshot
-    likes       INTEGER,
-    retweets    INTEGER
-);
-
--- Price table: time window around the tweet
--- → offset before and after posted_at
-CREATE TABLE price_snapshots (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    tweet_id    TEXT REFERENCES tweets(tweet_id),
-    symbol      TEXT,
-    timestamp   TEXT,
-    price       REAL,
-    volume      INTEGER
-);
-```
-
----
-
-## Crawler Logic (Skeleton)
-
-```python
-import asyncio
-import sqlite3
-from datetime import datetime, timedelta
-from twscrape import API
-import yfinance as yf
-
-# --- Configuration ---
-POLL_INTERVAL_MINUTES = 15      # How often a tweet is re-crawled
-POLL_DURATION_MINUTES = 120     # How long a tweet is tracked
-PRICE_OFFSET_BEFORE   = 30      # Minutes before the tweet
-PRICE_OFFSET_AFTER    = 120     # Minutes after the tweet
-
-# --- Initialize database ---
-conn = sqlite3.connect("webmining.db")
-# (INSERT CREATE TABLE statements here)
-
-# --- Discover new tweets ---
-async def discover_tweets(api, query, limit=500):
-    async for tweet in api.search(query, limit=limit):
-        # Filter: known accounts OR minimum follower threshold
-        if tweet.user.followersCount < MIN_FOLLOWERS:
-            continue
-        store_tweet(tweet, query)
-        await fetch_price_window(tweet)
-
-# --- Save a snapshot of a tweet ---
-def store_snapshot(tweet_id, likes, retweets):
-    conn.execute(
-        "INSERT INTO tweet_snapshots VALUES (NULL,?,?,?,?)",
-        (tweet_id, datetime.utcnow().isoformat(), likes, retweets)
-    )
-    conn.commit()
-
-# --- Fetch price time window ---
-async def fetch_price_window(tweet):
-    symbol = extract_cashtag(tweet.rawContent)  # e.g. "$TSLA" → "TSLA"
-    if not symbol:
-        return
-    start = tweet.date - timedelta(minutes=PRICE_OFFSET_BEFORE)
-    end   = tweet.date + timedelta(minutes=PRICE_OFFSET_AFTER)
-    data  = yf.download(symbol, start=start, end=end, interval="1m")
-    for ts, row in data.iterrows():
-        conn.execute(
-            "INSERT INTO price_snapshots VALUES (NULL,?,?,?,?,?)",
-            (str(tweet.id), symbol, ts.isoformat(), row["Close"], row["Volume"])
-        )
-    conn.commit()
-
-# --- Polling loop ---
-async def polling_loop():
-    # Track known tweets for POLL_DURATION_MINUTES
-    # Every POLL_INTERVAL_MINUTES → save a new snapshot
-    pass
-```
-
----
-
-## Rate Limiting & Anti-Ban Measures
-
-```python
-import time, random
-
-# Wait between requests
-time.sleep(random.uniform(1.5, 3.0))
-
-# Use multiple accounts in a pool (recommended: 2–3 throwaway accounts)
-await api.pool.add_account("user1", "pass1", "email1", "emailpass1")
-await api.pool.add_account("user2", "pass2", "email2", "emailpass2")
-await api.pool.login_all()
-```
-
----
-
-## Written Report – Documentation Checklist
-
-| Chapter | Content |
-|---|---|
-| **Search strategy** | Choice of queries and justification |
-| **Virality definition** | How is "viral" operationalized? (growth rate, absolute count, follower weighting) |
-| **Time window choice** | Why -30/+120 minutes? Reasoning |
-| **Confounding** | Why correlation ≠ causation (name confounding variables) |
-| **Ethics & legal** | Reflect on ToS implications of using twscrape |
-| **Data volume** | Number of tweets, time period, symbols covered |
-| **Data quality** | Duplicates, bots, spam – how are they filtered? |
-
----
-
-## Recommended Project Structure
-
-```
-webmining-x-crawler/
-├── crawler/
-│   ├── discover.py      # Find new tweets
-│   ├── poll.py          # Track known tweets over time
-│   └── prices.py        # Fetch stock price data
-├── data/
-│   └── webmining.db     # SQLite database
-├── analysis/
-│   └── correlation.py   # Analysis for the written report
-├── config.py            # Queries, thresholds, offsets
-└── main.py              # Entry point
-```
+1. Einleitung & Forschungsfrage
+2. Datenbasis & Methodik
+3. Ergebnisse (NB02 + NB03)
+4. Diskussion (Limitierungen, Confounding, kurzes Zeitfenster)
+5. Fazit

@@ -1,0 +1,15 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'techbericht.blg'
+[60] biber:342> INFO - === Sun Jul  5, 2026, 13:04:57
+[75] Biber.pm:421> INFO - Reading 'techbericht.bcf'
+[126] Biber.pm:1002> INFO - Found 1 citekeys in bib section 0
+[134] Biber.pm:4487> INFO - Processing section 0
+[143] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
+[144] bibtex.pm:1713> INFO - LaTeX decoding ...
+[151] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[185] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[186] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[186] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'de-DE'
+[186] Biber.pm:4313> INFO - No sort tailoring available for locale 'de-DE'
+[187] bbl.pm:676> INFO - Writing 'techbericht.bbl' with encoding 'UTF-8'
+[188] bbl.pm:779> INFO - Output to techbericht.bbl

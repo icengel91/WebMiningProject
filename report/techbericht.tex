@@ -1,0 +1,556 @@
+\documentclass[11pt, a4paper]{article}
+
+% ── Encoding & Language ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+
+% ── Layout ───────────────────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\usepackage{lmodern}
+
+% ── Math ─────────────────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb}
+
+% ── Tables & Figures ─────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[labelfont=bf, skip=4pt]{caption}
+\graphicspath{{figures/}{figures/02_sentiment_analysis/}{figures/03_correlation_modeling/}}
+
+% ── Colors & Links ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\definecolor{linkblue}{HTML}{1A5276}
+\definecolor{codebg}{HTML}{F5F5F5}
+\usepackage[
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+  pdftitle={Technischer Methodenbericht: WebMiningProject},
+]{hyperref}
+
+% ── Code listings ────────────────────────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{blue!70!black},
+  commentstyle=\color{gray},
+  stringstyle=\color{orange!80!black},
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  literate=
+    {ä}{{\"{a}}}1 {ö}{{\"{o}}}1 {ü}{{\"{u}}}1
+    {Ä}{{\"{A}}}1 {Ö}{{\"{O}}}1 {Ü}{{\"{U}}}1 {ß}{{\ss}}1,
+}
+
+% ── Bibliography ─────────────────────────────────────────────────────────────
+\usepackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt,
+  maxnames=3,
+]{biblatex}
+\addbibresource{references.bib}
+
+% ── Misc ─────────────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+% =============================================================================
+\begin{document}
+% =============================================================================
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\LARGE\bfseries Technischer Methodenbericht\par}
+  \vspace{0.8cm}
+  {\large Web Mining: Sentiment-Analyse von X\,(Twitter) und Aktienkursrenditen\par}
+  \vspace{0.6cm}
+  {\normalsize Softwarearchitektur und Implementierungsdetails\par}
+  \vspace{2cm}
+  {\large Ilker\par}
+  \vspace{0.4cm}
+  {\normalsize M.\,Sc. Data Science\par}
+  \vfill
+  {\normalsize \today\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Einleitung}
+\label{sec:einleitung}
+% =============================================================================
+
+Dieser Bericht dokumentiert die softwaretechnische Umsetzung des WebMiningProject.
+Im Vordergrund stehen Architekturentscheidungen, Implementierungsdetails und das
+Zusammenspiel der Systemkomponenten. Der statistische Analyseteil wird nur insoweit
+beschrieben, als er konkrete Implementierungsentscheidungen begründet; inhaltliche
+Interpretation der Ergebnisse findet sich im Hauptbericht.
+
+Das System gliedert sich in vier Hauptbereiche:
+(1)~Datenerhebung via X\,(Twitter)-Crawler,
+(2)~Kursdaten-Pipeline über Yahoo Finance,
+(3)~Sentiment-Analyse mit einem vortrainierten Transformer-Modell sowie
+(4)~statistische Korrelationsmodellierung in Jupyter-Notebooks.
+Die gesamte Implementierung erfolgte in Python~3.12.3 mit einer virtuellen
+Umgebung (\texttt{.venv}).
+
+% =============================================================================
+\section{Systemarchitektur}
+\label{sec:architektur}
+% =============================================================================
+
+\subsection{Verzeichnisstruktur}
+
+Das Projekt folgt einer strikten Trennung zwischen Quellcode (\texttt{src/}),
+Analysenotebooks (\texttt{notebooks/}), Rohdaten (\texttt{data/raw/}) und
+verarbeiteten Daten (\texttt{data/processed/}):
+
+\begin{lstlisting}[language={}, caption={Projektstruktur}]
+WebMiningProject/
+|-- src/
+|   |-- scraping/       # X/Twitter-Crawler (Playwright)
+|   |-- finance/        # Kursdaten-Pipeline (yfinance)
+|   |-- sentiment/      # Placeholder (Implementierung in NB02)
+|   `-- utils/          # Konfigurationshelfer
+|-- notebooks/
+|   |-- 01_data_quality_eda.ipynb     # Datenqualität & EDA
+|   |-- 02_sentiment_analysis.ipynb   # Sentiment-Inferenz
+|   `-- 03_correlation_modeling.ipynb # Korrelationsanalyse
+|-- data/
+|   |-- raw/prices/     # prices.csv + prices_meta.json
+|   `-- processed/      # Parquet-Dateien (Sentiment, Korrelationen)
+|-- configs/
+|   |-- tickers.yml     # Fokus-Ticker & Start-Datum
+|   `-- .env            # Secrets (gitignored)
+`-- report/             # LaTeX-Quellen & Abbildungen
+\end{lstlisting}
+
+\subsection{Datenfluss}
+
+Der Informationsfluss durch das System ist strikt unidirektional und in drei
+Stufen gegliedert (Abbildung~\ref{fig:datenfluss}):
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{ccccccccc}
+\texttt{X.com} & $\longrightarrow$ & \texttt{SQLite} & $\longrightarrow$ &
+\texttt{Parquet} & $\longrightarrow$ & \texttt{Ergebnis-Parquets} \\
+& & $\uparrow$ & & & & $\downarrow$ \\
+& & \texttt{yfinance} & & & & \texttt{Figuren / PDF}\\
+\end{tabular}
+\caption{Datenfluss im WebMiningProject}
+\label{fig:datenfluss}
+\end{figure}
+
+\subsection{Datenhaltung}
+
+Für persistente Speicherung werden zwei Formate eingesetzt:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{SQLite} (\texttt{data/webmining.db}): Rohtweets,
+        Engagement-Snapshots und Intraday-Preis-Snapshots.
+        Betrieb im WAL-Modus mit aktivierten Foreign~Keys.
+  \item \textbf{Parquet / CSV}: Verarbeitete Daten für Notebooks.
+        Parquet bietet typsichere Spalten, schnelle Lesepfade und effiziente
+        Komprimierung gegenüber CSV bei gleichzeitiger Kompatibilität mit
+        pandas und PyArrow.
+\end{itemize}
+
+% =============================================================================
+\section{Datenpipeline: X/Twitter-Crawler}
+\label{sec:crawler}
+% =============================================================================
+
+\subsection{Technologieauswahl: Playwright statt API}
+
+X\,(Twitter) hat im Jahr 2023 den kostenlosen API-Zugang für Drittaggregation
+weitgehend eingestellt. Als Alternative wurde ein browserbasierter Crawler auf
+Basis von \textbf{Playwright} (headless Chromium) implementiert. Playwright
+erlaubt die Injektion echter Session-Cookies und damit die Nutzung des regulären
+X-Frontends ohne kostenpflichtige API-Lizenz.
+
+Der Crawler ist explizit für den Betrieb auf einem \textbf{Raspberry~Pi~4}
+(ARM64) ausgelegt. Da Playwright keine vorgebauten ARM-Chromium-Binaries
+bereitstellt, verweist die Konfiguration auf den Systemchromium
+(\texttt{chromium-browser}), der via \texttt{apt} installiert wird.
+Das Skript \texttt{setup\_pi.sh} automatisiert die vollständige Einrichtung
+inklusive Cron-Jobs (Discovery Mo--Fr um 09:00, 12:00, 15:00~Uhr;
+Polling alle 30~Minuten).
+
+\subsection{Datenbankschema}
+
+Die SQLite-Datenbank enthält drei Tabellen:
+
+\begin{table}[H]
+\centering
+\caption{SQLite-Schema (\texttt{data/webmining.db})}
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Tabelle} & \textbf{PK} & \textbf{Wesentliche Spalten} \\
+\midrule
+\texttt{tweets} & \texttt{tweet\_id} (TEXT) &
+  \texttt{author}, \texttt{author\_followers}, \texttt{content},
+  \texttt{posted\_at} (ISO~8601), \texttt{symbol},
+  \texttt{likes}, \texttt{retweets} \\
+\addlinespace
+\texttt{tweet\_snapshots} & \texttt{id} (INT) &
+  \texttt{tweet\_id} (FK), \texttt{crawled\_at} (UTC),
+  \texttt{likes}, \texttt{retweets} \\
+\addlinespace
+\texttt{price\_snapshots} & \texttt{id} (INT) &
+  \texttt{tweet\_id} (FK), \texttt{symbol},
+  \texttt{timestamp} (1\,min OHLCV),
+  \texttt{price}, \texttt{volume} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent
+\texttt{store\_tweet()} nutzt den \texttt{UNIQUE}-Constraint auf
+\texttt{tweet\_id} zur idempotenten Ausführung: ein \texttt{IntegrityError}
+wird abgefangen und als \texttt{False} zurückgegeben (Duplikat), während eine
+erfolgreiche Insertion \texttt{True} zurückgibt. Dies ermöglicht
+restart-sichere Crawler-Läufe.
+
+\subsection{Such-Query-Design}
+
+Die Konfiguration (\texttt{x\_config.py}) definiert über 100~Suchanfragen in
+sechs Sprachen (EN, DE, FR, IT, JA, SV). Jede Query kombiniert mehrere
+Signaltypen:
+
+\begin{lstlisting}[language=Python, caption={Beispiel-Queries (x\_config.py)}]
+QUERIES = [
+    "$TSLA OR #Tesla OR #TeslaStock",         # Cashtag + Hashtag EN
+    "#Tesla #Aktie OR #TeslaAktie",           # Hashtag DE
+    "Tesla OR $TSLA lang:ja",                # Japanisch
+    "$BYD OR #BYDCar OR #\u6bd4\u4e9a\u8fea",          # BYD + CJK-Zeichen
+    "$NIBE OR #NIBEHeatPump OR #Waermepumpe", # NIBE + Sektorterm
+]
+\end{lstlisting}
+
+Server-seitig werden \texttt{min\_faves:} und \texttt{since:} in die URL
+injiziert. Client-seitig filtert der Crawler nach \texttt{MIN\_LIKES\,=\,100}
+und \texttt{MIN\_FOLLOWERS\,=\,100}.
+
+\subsection{Zweistufiges Ticker-Matching}
+
+Da Tweets keinen einheitlichen Ticker-Tag tragen, erfolgt die Zuordnung zu
+Fokus-Unternehmen in zwei Passes:
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Pass~1 (direkt)}: Cashtag-Aliases werden bekannten Symbolen
+        zugeordnet (z.\,B.\ \texttt{\$BYD} $\rightarrow$ \texttt{BYDDY},
+        \texttt{\$VOW} $\rightarrow$ \texttt{VWAGY}).
+  \item \textbf{Pass~2 (Regex)}: Tweets ohne Symbolzuordnung werden anhand
+        regulärer Ausdrücke auf Firmennamen und Marken geprüft.
+        Wortgrenzen wurden auf \texttt{(?<!\textbackslash w)} angepasst,
+        um zusammengesetzte Hashtags (\texttt{\#TeslaStock},
+        \texttt{\#NIBEHeatPump}) zu erfassen.
+\end{enumerate}
+
+\subsection{Anti-Bot-Maßnahmen und Polling-Logik}
+
+Zur Vermeidung von Sperrungen implementiert der Crawler mehrere Strategien:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Zufällige Delays}: 3--6\,s zwischen Requests
+        (\texttt{REQUEST\_DELAY\_MIN/MAX}).
+  \item \textbf{Lazy Follower-Abfrage}: Follower-Zahlen werden nur für Tweets
+        erhoben, die den Like-Filter bestanden haben (Profilbesuche erhöhen
+        das Entdeckungsrisiko).
+  \item \textbf{Adaptiver Velocity-Filter}: Nach mindestens 4~Snapshots
+        (\texttt{POLL\_MIN\_SNAPSHOTS}) wird ein Tweet nur weiter verfolgt,
+        wenn seine Engagement-Velocity $\geq 0{,}3$~Likes/Minute beträgt.
+        Dieser Filter reduziert nutzlose Polling-Zyklen für stagnante Tweets
+        erheblich und wird über eine korrelierte SQL-Subquery effizient berechnet.
+\end{itemize}
+
+Das Polling-Fenster beträgt 8~Stunden (alle 30~Minuten), was bis zu 16~Snapshots
+je Tweet und damit eine verwertbare Engagement-Zeitreihe erzeugt.
+
+\subsection{Intraday-Preis-Snapshots}
+
+Für jeden neu gespeicherten Tweet lädt der Crawler 1-Minuten-OHLCV-Daten
+im Fenster $[t_{\text{Tweet}} - 30\,\text{min},\; t_{\text{Tweet}} + 120\,\text{min}]$
+herunter und speichert sie in \texttt{price\_snapshots}. Geschlossene Märkte
+(Wochenenden, außerhalb NYSE-Öffnungszeit 09:30--16:00~ET) werden vorab
+erkannt und übersprungen.
+
+% =============================================================================
+\section{Datenpipeline: Historische Kurspreise}
+\label{sec:preise}
+% =============================================================================
+
+Der Kursdaten-Fetcher (\texttt{src/finance/price\_fetcher.py}) lädt historische
+OHLCV-Tagesdaten für alle Fokus-Ticker über \textbf{yfinance}. Das Design folgt
+dem Prinzip einer wachsenden, inkrementell aktualisierten CSV-Datei:
+
+\begin{lstlisting}[language=Python, caption={Inkrementelles Laden (price\_fetcher.py)}]
+# Pro Ticker nur fehlende Tage nachladen
+for ticker in tickers:
+    last = existing[existing["Ticker"] == ticker]["Date"].max()
+    start = last + timedelta(days=1)
+    new_data = yf.download(ticker, start=start, end=end,
+                           auto_adjust=True, progress=False)
+\end{lstlisting}
+
+Neben der CSV wird eine JSON-Metadatendatei (\texttt{prices\_meta.json}) mit
+Zeitstempel, Ticker-Liste, Zeilenanzahl, Datumsbereich und yfinance-Version
+gespeichert. Ein 1{,}5-Sekunden-Delay zwischen Ticker-Downloads verhindert
+Rate-Limiting bei Yahoo Finance.
+
+Für die Analyse wird ausschließlich \texttt{Adj~Close} (split- und
+dividendenbereinigt) als Kursreferenz verwendet. Kursausreißer wurden in NB01
+über die IQR\,$\times$\,3-Regel je Ticker identifiziert; fehlende Handelstage
+wurden mit der Bibliothek \texttt{exchange\_calendars} (NYSE-Kalender) überprüft.
+
+% =============================================================================
+\section{Sentiment-Analyse-Pipeline}
+\label{sec:sentiment}
+% =============================================================================
+
+\subsection{Modell und Vorverarbeitung}
+
+Die Sentiment-Inferenz erfolgt in NB02 mit dem vortrainierten Modell
+\texttt{cardiffnlp/twitter-xlm-roberta-base-sentiment}
+\autocite{loureiro2022timelms} über die Hugging~Face
+Transformers-Bibliothek. Die Wahl dieses Modells begründet sich in seiner
+Mehrsprachigkeit: Der Datensatz enthält Tweets auf Englisch, Deutsch,
+Französisch und Japanisch, die ohne Übersetzungsumweg verarbeitet werden können.
+
+Vor der Inferenz werden Texte bereinigt:
+
+\begin{lstlisting}[language=Python, caption={Textbereinigung vor Modell-Inferenz}]
+import re
+
+def clean_text(text: str) -> str:
+    text = re.sub(r"https?://\S+", "", text)   # URLs entfernen
+    text = re.sub(r"[$@]\w+", "", text)        # Cashtags & Mentions
+    return text.strip()
+
+# Nur Tweets mit mind. 20 verbleibenden Zeichen inferieren
+df["has_content"] = df["content"].map(clean_text).str.len() >= 20
+\end{lstlisting}
+
+Das Modell liefert Wahrscheinlichkeiten für drei Klassen; der kontinuierliche
+Compound-Score ist:
+\begin{equation}
+\texttt{xlm\_compound} = P(\text{positive}) - P(\text{negative}) \in [-1,\, 1]
+\end{equation}
+
+Die Inferenz läuft im Batch-Modus (\texttt{BATCH\_SIZE=32}) mit optionaler
+GPU-Beschleunigung. Ein Caching-Mechanismus (\texttt{FORCE\_RERUN=False})
+verhindert redundante GPU-Nutzung bei unveränderten Eingabedaten.
+
+\subsection{Tägliche Aggregation und Follower-Gewichtung}
+
+Tweet-Level-Scores werden je Fokus-Ticker und Kalendertag aggregiert.
+Das primäre Analysesignal ist der follower-gewichtete Compound-Score:
+
+\begin{equation}
+\texttt{weighted\_xlm} = \frac{\sum_{i} f_i \cdot c_i}{\sum_{i} f_i}
+\end{equation}
+
+wobei $f_i$ die Follower-Zahl und $c_i$ der Compound-Score von Tweet~$i$.
+Tage, an denen alle Autoren null Follower haben, erhalten \texttt{NaN}
+(werden beim Inner-Join in NB03 implizit ausgeschlossen).
+Die Ausgabedatei \texttt{daily\_sentiment\_original.parquet}
+enthält 508~Zeilen über 12~Ticker.
+
+\subsection{Retweet-Separation}
+
+Retweets (erkennbar am Präfix \texttt{"RT @"}) werden in separate
+Parquet-Dateien ausgelagert (\texttt{*\_retweets.parquet}), um das
+Primärsignal nicht durch bloße Multiplikation originärer Meinungen zu
+verzerren. Im vorliegenden Datensatz enthielten alle gecrawlten Inhalte
+originären Text; die Separation ist methodisch korrekt implementiert und
+für Folgestudien wiederverwendbar.
+
+% =============================================================================
+\section{Korrelationsmodellierung}
+\label{sec:korrelation}
+% =============================================================================
+
+\subsection{Daten-Merge und Overlap-Report}
+
+NB03 führt Sentiment-Daten und Kurspreise über einen Inner-Join auf
+\texttt{(focus\_ticker, date)} zusammen. Statt Ticker mit zu wenig Daten
+stillschweigend auszuschließen, erzeugt das Notebook einen
+\textbf{Overlap-Report} mit methoden-spezifischen Eligibility-Flags, der als
+\texttt{overlap\_report.parquet} persistent gespeichert wird:
+
+\begin{table}[H]
+\centering
+\caption{Eligibility-Schwellwerte im Overlap-Report}
+\begin{tabular}{ll}
+\toprule
+\textbf{Methode} & \textbf{Mindestvoraussetzung} \\
+\midrule
+Pearson/Spearman     & $\geq 5$ gepaarte Beobachtungen je Lag \\
+Rolling-Korrelation  & $\geq 30$ überlappende Tage \\
+Granger-Test         & $\geq 30$ Beobachtungen \\
+Event-Study          & $\geq 20$ Basistage \emph{und} $\geq 5$ Ereignisse je Richtung \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Methodische Implementierungsdetails}
+
+\paragraph{Multiple Testing (BH-FDR).}
+Da Pearson/Spearman-Tests für bis zu 10~Ticker $\times$ 4~Lags = 40 simultane
+Hypothesen durchgeführt werden, korrigiert das Notebook alle $p$-Werte
+mit der Benjamini-Hochberg-FDR-Methode:
+
+\begin{lstlisting}[language=Python, caption={BH-Korrektur via statsmodels}]
+from statsmodels.stats.multitest import multipletests
+
+_, p_adj, _, _ = multipletests(corr_df["pearson_p"].values, method="fdr_bh")
+corr_df["pearson_p_adj"] = p_adj
+corr_df["pearson_significant"] = p_adj < 0.05
+\end{lstlisting}
+
+\paragraph{Konfidenzintervalle (Fisher-z).}
+Zu jedem Pearson-$r$ wird ein 95\,\%-KI über die Fisher-$z$-Transformation
+berechnet ($\mathrm{SE}_z = (n-3)^{-1/2}$), das die Schätzunsicherheit bei
+kleinen Stichproben transparent macht.
+
+\paragraph{Stationaritätsprüfung (ADF).}
+Vor den Granger-Tests werden alle Eingangszeitreihen mit \texttt{adfuller()}
+aus \texttt{statsmodels} auf Einheitswurzeln geprüft.
+Alle vier getesteten Ticker waren auf beiden Reihen stationär
+($p < 0{,}001$) -- die Voraussetzung war erfüllt.
+
+\paragraph{Event-Study-Benchmark.}
+Als Markt-Benchmark für abnormale Renditen wird der S\&P~500 (\texttt{\^{}GSPC})
+via yfinance heruntergeladen, anstatt den internen Focus-Ticker-Mittelwert zu
+verwenden, der zu einem zirkulären Vergleich geführt hätte:
+
+\begin{lstlisting}[language=Python, caption={Externer S\&P-500-Benchmark}]
+spx_raw = yf.download("^GSPC", start=spx_start, end=spx_end,
+                       auto_adjust=True, progress=False)
+market_ret = spx_raw["Close"].pct_change().rename("market_return")
+merged2["abnormal_return"] = merged2["return"] - merged2["market_return"]
+\end{lstlisting}
+
+\subsection{Ausgabeformate}
+
+\begin{table}[H]
+\centering
+\caption{Ergebnis-Parquets aus NB03 (\texttt{data/processed/})}
+\begin{tabular}{ll}
+\toprule
+\textbf{Datei} & \textbf{Inhalt} \\
+\midrule
+\texttt{correlation\_results.parquet}  &
+  $r$, KI, $p_{\mathrm{roh}}$, $p_{\mathrm{adj}}$, $n$ je (Ticker, Lag) \\
+\texttt{granger\_results.parquet}      &
+  $p$-Werte (F-Test) je (Ticker, Richtung, Lag) \\
+\texttt{event\_study\_results.parquet} &
+  Mittlere abnormale Rendite je (Ticker, Richtung, $t$) \\
+\texttt{overlap\_report.parquet}       &
+  Coverage und Eligibility-Flags je Fokus-Ticker \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =============================================================================
+\section{Konfiguration, Tests und Reproduzierbarkeit}
+\label{sec:konfiguration}
+% =============================================================================
+
+\subsection{Konfigurationsmanagement}
+
+Secrets (X-Session-Cookies) werden ausschließlich über
+\texttt{configs/.env} (gitignored) bereitgestellt; eine kommentierte
+Vorlagedatei \texttt{configs/.env.example} ist versioniert und dokumentiert
+alle erwarteten Variablen. Analyse-Parameter sind zentral definiert:
+
+\begin{itemize}[noitemsep]
+  \item \texttt{configs/tickers.yml}: 13~Fokus-Ticker + \texttt{start\_date}
+  \item \texttt{src/scraping/x\_config.py}: alle Crawler-Parameter als
+        benannte Konstanten (\texttt{MIN\_LIKES}, \texttt{POLL\_INTERVAL\_MINUTES}, \ldots)
+\end{itemize}
+
+Jedes Notebook definiert Schwellwerte am Anfang explizit, sodass
+Reproduzierbarkeit ohne Kenntnis externer Konfigurationsdateien gegeben ist.
+
+\subsection{Automatisierte Tests}
+
+\begin{table}[H]
+\centering
+\caption{pytest-Testdateien in \texttt{tests/}}
+\begin{tabular}{ll}
+\toprule
+\textbf{Datei} & \textbf{Geprüfte Komponente} \\
+\midrule
+\texttt{test\_db.py}             &
+  SQLite-Schema, \texttt{store\_tweet()}, Duplikaterkennung \\
+\texttt{test\_price\_fetcher.py} &
+  Inkrementelles Laden, Merge-Logik, Metadaten-JSON \\
+\texttt{test\_x\_crawler.py}     &
+  Parser-Funktionen (\texttt{\_parse\_stat()}, Filterlogik) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Notebook-Konventionen}
+
+\begin{itemize}[noitemsep]
+  \item Outputs werden vor Commits geleert (\emph{Clear All Outputs}).
+  \item Zufallsprozesse nutzen feste Seeds (\texttt{seed=42}).
+  \item Figuren werden via \texttt{\_save\_fig()} automatisch nach
+        \texttt{report/figures/} exportiert (\texttt{FIG\_DPI=300}).
+  \item Parquet-Artefakte am Ende jedes Notebooks gespeichert;
+        Folgenotebooks lesen ausschließlich diese Dateien
+        (keine direkten SQLite-Abhängigkeiten in NB02/NB03).
+\end{itemize}
+
+% =============================================================================
+\section{Fazit}
+\label{sec:fazit}
+% =============================================================================
+
+Die implementierte Pipeline deckt den vollständigen Datenlebenszyklus von der
+Erhebung bis zur statistischen Auswertung ab. Besonderes Augenmerk wurde auf
+drei Aspekte gelegt:
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Modularität}: Klare Trennung zwischen Scraping, Preisdaten und
+        Analyse; jede Komponente ist unabhängig testbar und austauschbar.
+  \item \textbf{Reproduzierbarkeit}: Parquet-Artefakte als unveränderliche
+        Zwischenstände, explizite Parameter, versionierte Konfigurationsvorlagen.
+  \item \textbf{Methodische Korrektheit}: BH-FDR-Korrektur für Multiple~Testing,
+        ADF-Stationaritätstests vor Granger-Kausalitätstests,
+        externer S\&P~500-Benchmark für die Event-Study.
+\end{enumerate}
+
+Erweiterungspotenzial besteht insbesondere in drei Bereichen:
+(1)~Intraday-Analyse auf Basis der bereits gespeicherten
+\texttt{price\_snapshots}-Daten,
+(2)~Log-Returns für normalverteilungsnahere Residuenverteilungen im
+Granger-Modell sowie
+(3)~Kreuzvalidierung zur Reduktion des Data-Snooping-Bias bei der Lag-Selektion.
+
+\printbibliography[heading=bibintoc]
+
+\end{document}
