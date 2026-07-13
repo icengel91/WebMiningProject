@@ -87,19 +87,35 @@ data/raw/prices/
 
 ```yaml
 tickers:
-  - AAPL
-  - MSFT
-  - GOOGL
-  - AMZN
-  - TSLA
-  - META
-  - NVDA
+  # Öl & Gas
+  - BP        # BP p.l.c.
+  - XOM       # ExxonMobil
+  - SHEL      # Shell
+  - TTE       # TotalEnergies
+  - E         # Eni
+  # Wärmepumpen / HLK
+  - 6367.T    # Daikin Industries (Tokyo)
+  - NIBE-B.ST # NIBE Industrier (Stockholm)
+  - CARR      # Carrier Global
+  - 6503.T    # Mitsubishi Electric (Tokyo)
+  # Elektromobilität
+  - TSLA      # Tesla
+  - BYDDY     # BYD (ADR)
+  - VWAGY     # Volkswagen (ADR)
 
-start_date: "2024-01-01"
+focus_tickers:  # used by NB02 / NB03 sentiment pipeline
+  - BP
+  - XOM
+  # ... (same 12 tickers)
+
+start_date: "2026-01-01"
 ```
 
 - **`tickers`**: Yahoo Finance symbols to fetch. Add or remove entries here — no code changes needed.
+- **`focus_tickers`**: Subset read by the sentiment notebooks (`NB02`, `NB03`) for ticker assignment and correlation analysis. Currently identical to `tickers`.
 - **`start_date`**: Earliest date to fetch when no prior data exists for a ticker. Once data is collected, incremental mode takes over automatically.
+
+Die 12 Ticker umfassen drei thematische Sektoren: **Öl & Gas** (Vergleichsgruppe), **Wärmepumpen/HLK** (erneuerbare Heiztechnologie) und **Elektromobilität** (grüne Mobilität).
 
 This file is **required**. The module raises `FileNotFoundError` if it is missing.
 
@@ -217,24 +233,24 @@ Each save writes `prices_meta.json` alongside the CSV:
 
 ```json
 {
-  "updated_at": "20240615T173000Z",
-  "tickers": ["AAPL", "AMZN", "GOOGL", "META", "MSFT", "NVDA", "TSLA"],
-  "total_rows": 3927,
-  "date_min": "2024-01-02",
-  "date_max": "2024-06-14",
-  "yfinance_version": "0.2.36"
+  "updated_at": "20260713T103648Z",
+  "tickers": ["BP", "BYDDY", "CARR", "E", "SHEL", "TTE", "TSLA", "VWAGY", "XOM", "6367.T", "6503.T", "NIBE-B.ST"],
+  "total_rows": 5855,
+  "date_min": "2026-01-02",
+  "date_max": "2026-07-11",
+  "yfinance_version": "1.5.1"
 }
 ```
 
 ### Storage Estimates
 
-| Tickers | Timeframe | Approx. Rows | CSV Size |
-|---------|-----------|--------------|----------|
-| 7       | 1 year    | ~1,750       | ~150 KB  |
-| 50      | 1 year    | ~12,500      | ~1 MB    |
-| 50      | 5 years   | ~62,500      | ~5 MB    |
+| Tickers | Zeitraum       | Zeilen (ca.) | CSV-Größe |
+|---------|----------------|--------------|----------|
+| 12      | 6 Monate       | ~5.855       | ~450 KB  |
+| 12      | 1 Jahr         | ~3.000       | ~250 KB  |
+| 50      | 1 Jahr         | ~12.500      | ~1 MB    |
 
-Well within GitHub's 100 MB per-file and 5 GB repository limits.
+Der aktuelle Datensatz (12 Ticker, Jan–Jul 2026) liegt bei **5.855 Zeilen / ~450 KB** — deutlich unterhalb der GitHub-Grenzen (100 MB pro Datei).
 
 ---
 
