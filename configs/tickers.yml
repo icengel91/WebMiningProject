@@ -2,13 +2,36 @@
 # Edit this list to add or remove tickers — no code changes needed.
 
 tickers:
-  - AAPL
-  - MSFT
-  - GOOGL
-  - AMZN
+  # Oel & Gas
+  - BP
+  - XOM
+  - SHEL
+  - TTE
+  - E
+  # Waermepumpen / HLK
+  - 6367.T
+  - NIBE-B.ST
+  - CARR
+  - 6503.T
+  # Elektromobilitaet
   - TSLA
-  - META
-  - NVDA
+  - BYDDY
+  - VWAGY
+
+# Focus tickers for sentiment analysis (used by NB02/NB03)
+focus_tickers:
+  - BP
+  - XOM
+  - SHEL
+  - TTE
+  - E
+  - 6367.T
+  - NIBE-B.ST
+  - CARR
+  - 6503.T
+  - TSLA
+  - BYDDY
+  - VWAGY
 
 # Earliest date to fetch when no prior data exists
-start_date: "2024-01-01"
+start_date: "2026-01-01"

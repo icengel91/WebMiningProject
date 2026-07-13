@@ -1,16 +1,27 @@
 {
-  "updated_at": "20260713T103648Z",
+  "updated_at": "20260713T160701Z",
   "tickers": [
+    "6367.T",
+    "6503.T",
     "AAPL",
     "AMZN",
+    "BP",
+    "BYDDY",
+    "CARR",
+    "E",
     "GOOGL",
     "META",
     "MSFT",
+    "NIBE-B.ST",
     "NVDA",
-    "TSLA"
+    "SHEL",
+    "TSLA",
+    "TTE",
+    "VWAGY",
+    "XOM"
   ],
-  "total_rows": 4431,
+  "total_rows": 5855,
   "date_min": "2024-01-02",
   "date_max": "2026-07-10",
-  "yfinance_version": "1.5.1"
+  "yfinance_version": "1.2.0"
 }
