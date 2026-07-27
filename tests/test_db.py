@@ -6,6 +6,7 @@ import pytest
 
 from src.scraping.db import (
     get_db,
+    get_known_follower_counts,
     get_tracked_tweet_ids,
     store_price_snapshot,
     store_snapshot,
@@ -85,3 +86,25 @@ class TestGetTrackedTweetIds:
 
     def test_empty(self, conn):
         assert get_tracked_tweet_ids(conn) == []
+
+
+class TestGetKnownFollowerCounts:
+    def test_returns_known_authors(self, conn):
+        store_tweet(conn, "1", "alice", 50_000, "text", "2026-01-01T12:00:00", None)
+        store_tweet(conn, "2", "bob", 120_000, "text", "2026-01-01T13:00:00", None)
+        result = get_known_follower_counts(conn)
+        assert result == {"alice": 50_000, "bob": 120_000}
+
+    def test_empty_db_returns_empty_dict(self, conn):
+        assert get_known_follower_counts(conn) == {}
+
+    def test_zero_followers_excluded(self, conn):
+        # author_followers=0 means the count was never fetched; must not be cached
+        store_tweet(conn, "1", "ghost", 0, "text", "2026-01-01T12:00:00", None)
+        assert get_known_follower_counts(conn) == {}
+
+    def test_returns_max_when_author_has_multiple_tweets(self, conn):
+        store_tweet(conn, "1", "alice", 50_000, "t1", "2026-01-01T12:00:00", None)
+        store_tweet(conn, "2", "alice", 55_000, "t2", "2026-01-01T13:00:00", None)
+        result = get_known_follower_counts(conn)
+        assert result == {"alice": 55_000}

@@ -121,3 +121,16 @@ def get_tracked_tweet_ids(conn: sqlite3.Connection) -> list[str]:
     """Return tweet IDs that are still within the polling window."""
     cursor = conn.execute("SELECT tweet_id FROM tweets")
     return [row[0] for row in cursor.fetchall()]
+
+
+def get_known_follower_counts(conn: sqlite3.Connection) -> dict[str, int]:
+    """Return a mapping of author handle -> follower count from stored tweets.
+
+    Uses the maximum follower count ever recorded per author so that
+    ``discover_tweets`` can skip profile-page visits for already-seen accounts.
+    """
+    cursor = conn.execute(
+        "SELECT author, MAX(author_followers) FROM tweets "
+        "WHERE author_followers > 0 GROUP BY author"
+    )
+    return {row[0]: row[1] for row in cursor.fetchall()}

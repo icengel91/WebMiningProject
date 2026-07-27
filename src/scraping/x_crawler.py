@@ -23,6 +23,7 @@ from playwright.async_api import BrowserContext, Page, async_playwright
 from src.scraping import x_config as cfg
 from src.scraping.db import (
     get_db,
+    get_known_follower_counts,
     store_price_snapshot,
     store_snapshot,
     store_tweet,
@@ -291,6 +292,11 @@ async def discover_tweets(
     limit = limit or cfg.DISCOVERY_LIMIT
     new_count = 0
 
+    # Pre-seed cache from DB so authors already seen in previous runs don't
+    # trigger a profile-page visit.
+    follower_cache: dict[str, int] = get_known_follower_counts(conn)
+    logger.info("Follower cache pre-loaded with %d known authors.", len(follower_cache))
+
     page = await ctx.new_page()
 
     for query in queries:
@@ -334,9 +340,14 @@ async def discover_tweets(
                 )
                 continue
 
-            # Fetch follower count only for tweets that passed the like filter
-            if tweet.author_followers == 0:
+            # Fetch follower count only for tweets that passed the like filter.
+            # Use the in-memory cache to avoid revisiting the same profile page.
+            if tweet.author in follower_cache:
+                tweet.author_followers = follower_cache[tweet.author]
+                logger.debug("Follower cache hit for @%s (%d).", tweet.author, tweet.author_followers)
+            else:
                 tweet.author_followers = await _get_follower_count(page, tweet.author)
+                follower_cache[tweet.author] = tweet.author_followers
                 await asyncio.sleep(random.uniform(0.5, 1.0))
 
             # Filter by follower count
@@ -606,14 +617,25 @@ async def run(
             cfg.POLL_DURATION_MINUTES,
         )
         end_time = datetime.now(timezone.utc) + timedelta(minutes=cfg.POLL_DURATION_MINUTES)
+        consecutive_empty_rounds = 0
 
         while datetime.now(timezone.utc) < end_time:
-            await poll_tracked_tweets(ctx, conn)
+            snapshots = await poll_tracked_tweets(ctx, conn)
+            if snapshots == 0:
+                consecutive_empty_rounds += 1
+                if consecutive_empty_rounds >= cfg.POLL_EARLY_EXIT_ROUNDS:
+                    logger.info(
+                        "Early exit: %d consecutive rounds with 0 new snapshots.",
+                        consecutive_empty_rounds,
+                    )
+                    break
+            else:
+                consecutive_empty_rounds = 0
             logger.info("Sleeping %d minutes until next poll…", cfg.POLL_INTERVAL_MINUTES)
             await asyncio.sleep(cfg.POLL_INTERVAL_MINUTES * 60)
-
-        # Final poll
-        await poll_tracked_tweets(ctx, conn)
+        else:
+            # Final poll after normal time-based exit
+            await poll_tracked_tweets(ctx, conn)
     finally:
         await browser.close()
         await pw.stop()

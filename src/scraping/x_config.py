@@ -321,7 +321,8 @@ CHROMIUM_EXECUTABLE: str = os.environ.get("CHROMIUM_EXECUTABLE", "")
 # ---------------------------------------------------------------------------
 
 POLL_INTERVAL_MINUTES: int = 30       # Re-crawl interval per tweet
-POLL_DURATION_MINUTES: int = 480      # Hard maximum tracking window (8 h) — adaptive velocity filter stops most tweets earlier
+POLL_DURATION_MINUTES: int = 180      # Hard maximum tracking window (3 h) — adaptive velocity filter stops most tweets earlier
+POLL_EARLY_EXIT_ROUNDS: int = 2       # Stop early after this many consecutive rounds with 0 new snapshots
 POLL_MIN_SNAPSHOTS: int = 4           # Every tweet gets at least this many polls regardless of velocity
 POLL_MIN_VELOCITY: float = 0.3        # Likes/minute threshold — tweets below this are skipped after POLL_MIN_SNAPSHOTS
 
