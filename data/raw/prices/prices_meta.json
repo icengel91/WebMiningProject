@@ -1,5 +1,5 @@
 {
-  "updated_at": "20260831T170939Z",
+  "updated_at": "20260901T093907Z",
   "tickers": [
     "6367.T",
     "6503.T",
@@ -20,8 +20,8 @@
     "VWAGY",
     "XOM"
   ],
-  "total_rows": 6271,
+  "total_rows": 6283,
   "date_min": "2024-01-02",
-  "date_max": "2026-08-28",
+  "date_max": "2026-08-31",
   "yfinance_version": "1.7.0"
 }
